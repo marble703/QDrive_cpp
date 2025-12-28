@@ -17,22 +17,18 @@ int main() {
 
     qdriver::interface::Interface interface(serialPortPtr);
 
-
     if (interface.isSerialPortOpen()) {
         std::cout << "Serial port opened successfully." << std::endl;
     } else {
         std::cout << "Failed to open serial port." << std::endl;
         return 0;
     }
-
     interface.sendCommand({ .cmd = "enable" });
-    sleep(1);
-    interface.sendCommand({ .cmd = "ctrl", .parameter = "angle", .value = "3" });
-    sleep(1);
-    interface.sendCommand({ .cmd = "ctrl", .parameter = "angle", .value = "0" });
-    sleep(1);
-    interface.sendCommand({ .cmd = "disable" });
-    sleep(1);
+
+    while (true) {
+        interface.sendCommand({ .cmd = "ctrl", .parameter = "step_angle", .value = "0.01" });
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    }
 
     return 0;
 }

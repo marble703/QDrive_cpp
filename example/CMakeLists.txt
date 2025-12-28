@@ -1,14 +1,19 @@
 cmake_minimum_required(VERSION 3.22)
+project(qdrive_example)
 
-add_executable(qdrive_example
-	src/main.cpp
-)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
-target_compile_features(qdrive_example PRIVATE cxx_std_17)
-target_link_libraries(qdrive_example PRIVATE qdrive_driver)
+if(CMAKE_BUILD_TYPE STREQUAL "")
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
 
-add_executable(qdrive_example_reader
-	src/reader.cpp)
+function(add_qdrive_executable target_name source_file)
+    add_executable(${target_name} ${source_file})
+    target_compile_features(${target_name} PRIVATE cxx_std_17)
+    target_link_libraries(${target_name} PRIVATE qdrive_driver)
+endfunction()
 
-target_compile_features(qdrive_example_reader PRIVATE cxx_std_17)
-target_link_libraries(qdrive_example_reader PRIVATE qdrive_driver)
+add_qdrive_executable(qdrive_example src/main.cpp)
+add_qdrive_executable(qdrive_example_reader src/reader.cpp)
+add_qdrive_executable(qdrive_example_two src/two.cpp)
