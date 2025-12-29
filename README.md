@@ -55,8 +55,21 @@ Nyarch Linux
 终端输出
 `./build/example/qdrive_example_reader`
 
+## usb-rule
+
+设置 usb rule
+
+``` sh
+chmod +x create-udev-rule.sh
+./script/create-udev-rule.sh /dev/ttyACM0 QD4310-0 
+```
+
 ## 开源声明
 
-本项目使用 GPL-3.0 协议
+本项目暂时处于未发布状态
+
+本项目使用 [**GNU General Public License v3.0**](https://www.gnu.org/licenses/gpl-3.0.en.html) 许可证
+
+Copyright (C) 2025 marble703
 
 本项目与[QDriver](https://github.com/Liu-Curiousity/QDrive-Software)通过 can/serial 协议进行通信

@@ -1,4 +1,4 @@
-#include "interface.hpp"
+#include "interfacebase.hpp"
 #include "serial/serial.hpp"
 
 #include <iostream>
@@ -17,7 +17,7 @@ int main() {
         qdriver::io::SerialPortBase::stop_bits::one
     );
 
-    qdriver::interface::Interface interface_0(serialPortPtr_0);
+    qdriver::interface::InterfaceBase interface_0(serialPortPtr_0);
 
     std::shared_ptr<qdriver::io::Serial> serialPortPtr_1 = std::make_shared<qdriver::io::Serial>(
         std::move(ioContext_1),
@@ -28,7 +28,7 @@ int main() {
         qdriver::io::SerialPortBase::stop_bits::one
     );
 
-    qdriver::interface::Interface interface_1(serialPortPtr_1);
+    qdriver::interface::InterfaceBase interface_1(serialPortPtr_1);
 
     if (interface_0.isSerialPortOpen() && interface_1.isSerialPortOpen()) {
         std::cout << "Serial port opened successfully." << std::endl;
