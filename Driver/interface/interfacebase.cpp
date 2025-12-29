@@ -64,6 +64,7 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
 
     this->readerThread_ = std::thread([this, readerFunction]() {
 
+        // Todo: 检查缓冲区大小是否合理
         std::string buffer(32, '\0');
         std::size_t pos;
         while (true) {

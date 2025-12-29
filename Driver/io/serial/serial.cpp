@@ -4,13 +4,13 @@
 namespace qdriver::io {
 
 Serial::Serial(
-    std::unique_ptr<IoContext> ioContext,
+    IOContextPtrSelector ioContext,
     const std::filesystem::path& devicePath,
     SerialPortConfig config,
     std::string portName
 ):
     ioContext_(std::move(ioContext)),
-    serialPort_(*ioContext, devicePath.string()),
+    serialPort_(*ioContext.get(), devicePath.string()),
     portName_(portName.empty() ? devicePath.string() : portName) {
     serialPort_.set_option(SerialPortBase::baud_rate(config.baud_rate));
     serialPort_.set_option(SerialPortBase::character_size(config.data_bits));
@@ -19,7 +19,7 @@ Serial::Serial(
 }
 
 Serial::Serial(
-    std::unique_ptr<IoContext> ioContext,
+    IOContextPtrSelector ioContext,
     const std::filesystem::path& devicePath,
     unsigned int baud_rate,
     unsigned int data_bits,
