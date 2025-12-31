@@ -66,7 +66,7 @@ bool InterfaceBase::sendCommand(const CanCommand& command) {
             data.push_back(static_cast<uint8_t>(command.ctrlValue & 0xFF));
             data.push_back(static_cast<uint8_t>((command.ctrlValue >> 8) & 0xFF));
 
-            return this->canBusPtr_->sendFrame(command.id, data);
+            return this->canBusPtr_->sendFrame(data, command.id);
         }
     } else if (this->ioType_ == ioType::SERIAL) {
         throw std::runtime_error("Illgal command for SERIAL interface");
@@ -109,7 +109,7 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
                 if (this->stopReaderThread_.load())
                     break;
 
-                if (this->canBusPtr_->receiveFrame(id, data)) {
+                if (this->canBusPtr_->receiveFrame(data, id)) {
                     std::string buffer = std::to_string(id) + ":";
                     char hex[3];
                     for (auto b: data) {

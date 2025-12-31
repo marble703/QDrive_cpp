@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 add_library(qdrive_driver
 	io/can/can.cpp
 	io/serial/serial.cpp
-	interface/interfacebase.cpp
+	interface/base/interfacebase.cpp
 	interface/interface.cpp
 )
 

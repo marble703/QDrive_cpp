@@ -11,7 +11,9 @@
 
 namespace qdriver::io {
 
-Can::Can(const std::string& ifname) {
+Can::Can(const std::string& ifname, int sendCanId, int receiveCanId):
+    sendCanId_(sendCanId),
+    receiveCanId_(receiveCanId) {
     // 创建 Socket
     sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (sock_ < 0) {
@@ -45,12 +47,16 @@ Can::~Can() {
         close(sock_);
 }
 
-bool Can::sendFrame(uint32_t id, const std::vector<uint8_t>& data) {
+bool Can::sendFrame(const std::vector<uint8_t>& data, int id) {
     if (sock_ < 0)
         return false;
 
     can_frame frame;
     std::memset(&frame, 0, sizeof(frame));
+
+    if (id < 0)
+        id = this->sendCanId_;
+
     frame.can_id = id;
 
     if (data.size() > 8) {
@@ -64,7 +70,7 @@ bool Can::sendFrame(uint32_t id, const std::vector<uint8_t>& data) {
     return write(sock_, &frame, sizeof(can_frame)) > 0;
 }
 
-bool Can::receiveFrame(uint32_t& id, std::vector<uint8_t>& data) {
+bool Can::receiveFrame(std::vector<uint8_t>& data, int id [[maybe_unused]]) {
     if (sock_ < 0)
         return false;
 
@@ -81,7 +87,6 @@ bool Can::receiveFrame(uint32_t& id, std::vector<uint8_t>& data) {
         return false;
     }
 
-    id = frame.can_id;
     data.assign(frame.data, frame.data + frame.can_dlc);
     return true;
 }
