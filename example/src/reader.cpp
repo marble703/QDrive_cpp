@@ -17,10 +17,10 @@ int main() {
 
     qdriver::interface::InterfaceBase interface(serialPortPtr);
 
-    if (interface.isSerialPortOpen()) {
-        std::cout << "Serial port opened successfully." << std::endl;
+    if (interface.isPortOpen()) {
+        std::cout << "port opened successfully." << std::endl;
     } else {
-        std::cout << "Failed to open serial port." << std::endl;
+        std::cout << "Failed to open port." << std::endl;
     }
 
     interface.startReaderThread([](std::string& buffer) {

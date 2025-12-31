@@ -30,10 +30,10 @@ int main() {
 
     qdriver::interface::InterfaceBase interface_1(serialPortPtr_1);
 
-    if (interface_0.isSerialPortOpen() && interface_1.isSerialPortOpen()) {
-        std::cout << "Serial port opened successfully." << std::endl;
+    if (interface_0.isPortOpen() && interface_1.isPortOpen()) {
+        std::cout << "port opened successfully." << std::endl;
     } else {
-        std::cout << "Failed to open serial port." << std::endl;
+        std::cout << "Failed to open port." << std::endl;
         return 0;
     }
     interface_0.sendCommand({ .cmd = "enable" });

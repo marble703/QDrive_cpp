@@ -19,6 +19,12 @@
 
 等 usb-can 线
 
+## 代码结构
+
+io(通信功能封装) 
+-> interfacebase(基础通信协议封装) 
+-> interface(高级协议封装)
+
 ## 开发环境
 
 Ubuntu 22.04 
@@ -62,6 +68,12 @@ Nyarch Linux
 ``` sh
 chmod +x create-udev-rule.sh
 ./script/create-udev-rule.sh /dev/ttyACM0 QD4310-0 
+```
+
+## 启动 can 通信
+
+```sh
+sudo ip link set can0 up type can bitrate 1000000
 ```
 
 ## 开源声明

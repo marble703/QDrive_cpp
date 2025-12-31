@@ -1,11 +1,16 @@
 #include "interfacebase.hpp"
-
+#include <cstdio>
 namespace qdriver::interface {
 
 InterfaceBase::InterfaceBase(std::shared_ptr<qdriver::io::Serial> serialPort):
     ioType_(ioType::SERIAL),
     serialPortPtr_(serialPort),
     canBusPtr_(nullptr) {}
+
+InterfaceBase::InterfaceBase(std::shared_ptr<qdriver::io::Can> canPort):
+    ioType_(ioType::CAN),
+    serialPortPtr_(nullptr),
+    canBusPtr_(canPort) {}
 
 InterfaceBase::~InterfaceBase() {
     this->stopReaderThread_.store(true);
@@ -31,58 +36,93 @@ ioType InterfaceBase::getIoType(std::shared_ptr<std::string> ioTypeName) const {
     return this->ioType_;
 }
 
-bool InterfaceBase::sendCommand(const Command& command) {
-    switch (this->ioType_) {
-        case ioType::SERIAL:
-            if (this->serialPortPtr_) {
-                std::string fullCommand = command.cmd;
-                if (!command.parameter.empty()) {
-                    fullCommand += " " + command.parameter;
-                }
-                if (!command.value.empty()) {
-                    fullCommand += " " + command.value;
-                }
-                fullCommand += "\n";
-                return this->serialPortPtr_->write(fullCommand, fullCommand.size());
+bool InterfaceBase::sendCommand(const SerialCommand& command) {
+    if (this->ioType_ == ioType::SERIAL) {
+        if (this->serialPortPtr_) {
+            std::string fullCommand = command.cmd;
+            if (!command.parameter.empty()) {
+                fullCommand += " " + command.parameter;
             }
-            break;
-        case ioType::CAN:
-            // 还没写
-            break;
-        default:
-            break;
+            if (!command.value.empty()) {
+                fullCommand += " " + command.value;
+            }
+            fullCommand += "\n";
+            return this->serialPortPtr_->write(fullCommand, fullCommand.size());
+        }
+    } else if (this->ioType_ == ioType::CAN) {
+        throw std::runtime_error("Illgal command for CAN interface");
+    } else {
+        throw std::runtime_error("Unknown IO type");
+    }
+
+    return false;
+}
+
+bool InterfaceBase::sendCommand(const CanCommand& command) {
+    if (this->ioType_ == ioType::CAN) {
+        if (this->canBusPtr_) {
+            std::vector<uint8_t> data;
+            data.push_back(command.ctrlCommand);
+            data.push_back(static_cast<uint8_t>(command.ctrlValue & 0xFF));
+            data.push_back(static_cast<uint8_t>((command.ctrlValue >> 8) & 0xFF));
+
+            return this->canBusPtr_->sendFrame(command.id, data);
+        }
+    } else if (this->ioType_ == ioType::SERIAL) {
+        throw std::runtime_error("Illgal command for SERIAL interface");
+    } else {
+        throw std::runtime_error("Unknown IO type");
     }
 
     return false;
 }
 
 bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFunction) {
-    
     if (this->readerThread_.joinable()) {
         return false; // 已经有线程在运行
     }
 
     this->readerThread_ = std::thread([this, readerFunction]() {
+        if (this->ioType_ == ioType::SERIAL) {
+            // Todo: 检查缓冲区大小是否合理
+            std::string buffer(32, '\0');
+            while (true) {
+                if (this->stopReaderThread_.load())
+                    break;
 
-        // Todo: 检查缓冲区大小是否合理
-        std::string buffer(32, '\0');
-        std::size_t pos;
-        while (true) {
-            this->stopReaderThread_.load();
-            auto rc = serialPortPtr_->read(buffer, 32);
-            if (!rc) {
-                continue;
+                auto rc = serialPortPtr_->read(buffer, 32);
+                if (!rc) {
+                    continue;
+                }
+
+                if (buffer.size() > 0) {
+                    readerFunction(buffer);
+                }
+
+                std::fill(buffer.begin(), buffer.end(), '\0');
             }
+        } else if (this->ioType_ == ioType::CAN) {
+            uint32_t id;
+            id = 0x500;
+            std::vector<uint8_t> data;
+            while (true) {
+                if (this->stopReaderThread_.load())
+                    break;
 
-            if (buffer.size() > 0) {
-                readerFunction(buffer);
+                if (this->canBusPtr_->receiveFrame(id, data)) {
+                    std::string buffer = std::to_string(id) + ":";
+                    char hex[3];
+                    for (auto b: data) {
+                        std::snprintf(hex, sizeof(hex), "%02X", b);
+                        buffer += hex;
+                    }
+                    readerFunction(buffer);
+                }
             }
-
-            std::fill(buffer.begin(), buffer.end(), '\0');
         }
     });
 
-    if(!this->readerThread_.joinable()) {
+    if (!this->readerThread_.joinable()) {
         return false; // 线程创建失败
     }
     this->readerThread_.detach();
@@ -90,8 +130,9 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
     return true;
 }
 
-bool InterfaceBase::isSerialPortOpen() const {
-    return this->ioType_ == ioType::SERIAL && this->serialPortPtr_->isOpen();
+bool InterfaceBase::isPortOpen() const {
+    return this->ioType_ == ioType::SERIAL && this->serialPortPtr_->isOpen()
+        || this->ioType_ == ioType::CAN && this->canBusPtr_->isOpen();
 }
 
 } // namespace qdriver::interface
