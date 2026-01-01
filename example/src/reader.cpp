@@ -8,7 +8,7 @@ int main() {
 
     std::shared_ptr<qdriver::io::Serial> serialPortPtr = std::make_shared<qdriver::io::Serial>(
         std::move(ioContext),
-        "/dev/QD4310-0",
+        "/dev/QD4310-1",
         115200,
         8,
         qdriver::io::SerialPortBase::parity::none,

@@ -36,14 +36,15 @@ public:
 
     ioType getIoType(std::shared_ptr<std::string> ioTypeName = nullptr) const;
 
+    bool isPortOpen() const;
+
     // 串口命令发送
     bool sendCommand(const SerialCommand& command);
 
+    // CAN 命令发送
     bool sendCommand(const CanCommand& command);
 
     bool startReaderThread(std::function<void(std::string&)> readerFunction);
-
-    bool isPortOpen() const;
 
 protected:
     const ioType ioType_;

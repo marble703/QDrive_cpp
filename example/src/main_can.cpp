@@ -1,5 +1,5 @@
 #include "can/can.hpp"
-#include "base/interfacebase.hpp"
+#include "interface.hpp"
 
 #include <iostream>
 #include <memory>
@@ -7,7 +7,7 @@
 int main() {
     std::shared_ptr<qdriver::io::Can> canBusPtr = std::make_shared<qdriver::io::Can>("can0");
 
-    qdriver::interface::InterfaceBase interface(canBusPtr);
+    qdriver::interface::Interface interface(canBusPtr);
 
     if (interface.isPortOpen()) {
         std::cout << "CAN port opened successfully." << std::endl;
@@ -16,19 +16,13 @@ int main() {
         return 0;
     }
 
+    interface.enable(0x400);
     sleep(1);
-    if (interface.sendCommand({ .id = 0x400, .ctrlCommand = 0x01, .ctrlValue = 0 })) {
-        std::cout << "Sent start command." << std::endl;
-    }
+    interface.ctrlAngle(0, 0x400);
     sleep(1);
-    interface.sendCommand({ .id = 0x400, .ctrlCommand = 0x05, .ctrlValue = 10000 });
-    std::cout << "Sent zero angle command." << std::endl;
+    interface.ctrlAngle(std::numbers::pi_v<float> / 180 * 90, 0x400);
     sleep(1);
-    interface.sendCommand({ .id = 0x400, .ctrlCommand = 0x05, .ctrlValue = 0 });
-    std::cout << "Sent set angle to 3 degrees command." << std::endl;
-    sleep(1);
-    interface.sendCommand({ .id = 0x400, .ctrlCommand = 0x02, .ctrlValue = 0 });
-    std::cout << "Sent stop command." << std::endl;
+    interface.disable(0x400);
     sleep(1);
 
     return 0;
