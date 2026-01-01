@@ -14,7 +14,7 @@ static const float MAX_ANGLE_CTRL_VALUE     = std::numbers::pi_v<float> * 2; // 
 static const float MIN_ANGLE_CTRL_VALUE     = 0;
 static const float MAX_STEPANGLE_CTRL_VALUE = std::numbers::pi_v<float> * 5;  // c++20
 static const float MIN_STEPANGLE_CTRL_VALUE = std::numbers::pi_v<float> * -5; // c++20
-class Interface: InterfaceBase {
+class Interface: public InterfaceBase {
 public:
 Interface(std::shared_ptr<qdriver::io::Serial> serialPort);
     Interface(std::shared_ptr<qdriver::io::Can> canPort, uint32_t defalutSendCanID = -1);
