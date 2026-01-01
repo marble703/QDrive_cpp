@@ -21,10 +21,10 @@ int main() {
         std::cout << "Sent start command." << std::endl;
     }
     sleep(1);
-    interface.sendCommand({ .id = 0x400, .ctrlCommand = 0x05, .ctrlValue = 0 });
+    interface.sendCommand({ .id = 0x400, .ctrlCommand = 0x05, .ctrlValue = 10000 });
     std::cout << "Sent zero angle command." << std::endl;
     sleep(1);
-    interface.sendCommand({ .id = 0x400, .ctrlCommand = 0x05, .ctrlValue = 3 });
+    interface.sendCommand({ .id = 0x400, .ctrlCommand = 0x05, .ctrlValue = 0 });
     std::cout << "Sent set angle to 3 degrees command." << std::endl;
     sleep(1);
     interface.sendCommand({ .id = 0x400, .ctrlCommand = 0x02, .ctrlValue = 0 });
