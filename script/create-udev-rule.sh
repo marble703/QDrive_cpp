@@ -9,7 +9,7 @@ DEV_PATH="$1"
 NAME="$2"
 
 # 获取设备的 idVendor, idProduct, serial（取前3行）
-OUTPUT=$(udevadm info -a -n "$DEV_PATH" | grep -E 'idVendor|idProduct|serial' | head -n 3)
+OUTPUT=$(udevadm info -a -n "$DEV_PATH" | grep -E 'idVendor|idProduct|serial')
 
 if [ -z "$OUTPUT" ]; then
     echo "Error: Failed to retrieve device attributes."
@@ -33,3 +33,6 @@ RULE="SUBSYSTEM==\"tty\", ATTRS{idVendor}==\"$ID_VENDOR\", ATTRS{idProduct}==\"$
 echo "$RULE" | sudo tee /etc/udev/rules.d/99-usb-serial.rules > /dev/null
 
 echo "udev rules loaded, please unplug and replug the device to take effect."
+
+sudo udevadm control --reload-rules            
+sudo udevadm trigger

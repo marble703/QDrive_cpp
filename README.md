@@ -1,8 +1,8 @@
-# QDriver SDK (C++)
+# QDrive SDK (C++)
 
 ## 简介
 
-本项目为[QDriver](https://github.com/Liu-Curiousity/QDrive-Software)上位机 cpp 开发工具
+本项目为[QDrive](https://github.com/Liu-Curiousity/QDrive-Software)上位机 cpp 开发工具
 
 正在开发中，欢迎提 issue 和 pr
 
