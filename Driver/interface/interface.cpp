@@ -113,7 +113,7 @@ bool Interface::ctrlAngle(float angle, int canID) {
         return this->sendCommand(
             { .id          = this->externalCanID(canID),
               .ctrlCommand = 0x05,
-              .ctrlValue   = this->speedToCtrlValue(angle) }
+              .ctrlValue   = this->angleToCtrlValue(angle) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
