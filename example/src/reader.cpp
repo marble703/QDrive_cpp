@@ -1,4 +1,4 @@
-#include "base/interfacebase.hpp"
+#include "interface.hpp"
 #include "serial/serial.hpp"
 
 #include <iostream>
@@ -15,7 +15,7 @@ int main() {
         qdriver::io::SerialPortBase::stop_bits::one
     );
 
-    qdriver::interface::InterfaceBase interface(serialPortPtr);
+    qdriver::interface::Interface interface(serialPortPtr);
 
     if (interface.isPortOpen()) {
         std::cout << "port opened successfully." << std::endl;

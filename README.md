@@ -20,6 +20,7 @@
 io(通信功能封装) 
 -> interfacebase(基础通信协议封装) 
 -> interface(高级通信协议封装)
+剩下还没写
 
 ## 开发环境
 
@@ -63,9 +64,7 @@ can：
 `./build/example/qdrive_example_reader_can`
 或是使用 `candump`
 
-
-
-## usb-rule
+# 脚本
 
 设置 usb rule
 
@@ -74,10 +73,25 @@ chmod +x create-udev-rule.sh
 ./script/create-udev-rule.sh /dev/ttyACM0 QD4310-0 
 ```
 
-## 启动 can 通信
+## 小指令
+
+启动 can 通信
 
 ```sh
 sudo ip link set can0 up type can bitrate 1000000
+```
+
+搜索 can 设备
+
+```sh
+ip link show | grep can
+```
+
+发送/接收 can 数据
+
+```sh
+cansend can0 400#000000
+candump can0
 ```
 
 ## 开源声明

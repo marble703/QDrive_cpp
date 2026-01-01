@@ -1,4 +1,4 @@
-#include "base/interfacebase.hpp"
+#include "interface.hpp"
 #include "serial/serial.hpp"
 
 #include <iostream>
@@ -17,7 +17,7 @@ int main() {
         qdriver::io::SerialPortBase::stop_bits::one
     );
 
-    qdriver::interface::InterfaceBase interface_0(serialPortPtr_0);
+    qdriver::interface::Interface interface_0(serialPortPtr_0);
 
     std::shared_ptr<qdriver::io::Serial> serialPortPtr_1 = std::make_shared<qdriver::io::Serial>(
         std::move(ioContext_1),
@@ -28,7 +28,7 @@ int main() {
         qdriver::io::SerialPortBase::stop_bits::one
     );
 
-    qdriver::interface::InterfaceBase interface_1(serialPortPtr_1);
+    qdriver::interface::Interface interface_1(serialPortPtr_1);
 
     if (interface_0.isPortOpen() && interface_1.isPortOpen()) {
         std::cout << "port opened successfully." << std::endl;
@@ -36,13 +36,12 @@ int main() {
         std::cout << "Failed to open port." << std::endl;
         return 0;
     }
-    interface_0.sendCommand({ .cmd = "enable" });
-    interface_1.sendCommand({ .cmd = "enable" });
+    interface_0.enable();
+    interface_1.enable();
 
     while (true) {
-        interface_0.sendCommand({ .cmd = "ctrl", .parameter = "step_angle", .value = "0.01" });
-        interface_1.sendCommand({ .cmd = "ctrl", .parameter = "step_angle", .value = "0.01" });
-
+        interface_0.ctrlStepAngle(0.01);
+        interface_1.ctrlStepAngle(0.01);
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
 
