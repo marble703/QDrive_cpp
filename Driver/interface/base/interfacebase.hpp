@@ -26,7 +26,11 @@ struct CanCommand {
 class InterfaceBase {
 public:
     InterfaceBase(std::shared_ptr<qdriver::io::Serial> serialPort);
-    InterfaceBase(std::shared_ptr<qdriver::io::Can> canPort);
+    InterfaceBase(
+        std::shared_ptr<qdriver::io::Can> canPort,
+        uint32_t sendCanID = 0x400,
+        uint32_t recvCanID = 0x500
+    );
 
     ~InterfaceBase();
 
@@ -49,6 +53,9 @@ protected:
 
     std::atomic<bool> stopReaderThread_ { false };
     std::thread readerThread_;
+
+    const uint32_t sendCanID_ = 0x400;
+    const uint32_t recvCanID_ = 0x500;
 };
 
 } // namespace qdriver::interface

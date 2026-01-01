@@ -7,17 +7,18 @@
 ## 开发进度
 
 - [x] 串口通信
-- [ ] can 通信
-- [ ] 接口(部分完成)
+- [x] can 通信
+- [x] 接口
 - [ ] 日志
 - [ ] 调试工具
 - [ ] Mock
 
 当前进度：
 
-发现 serial 在 50 HZ 及以上控制频率疑似出现硬件缓存溢出
+编写业务层
 
-等 usb-can 线
+规划：
+将 can 接入 iocontext
 
 ## 代码结构
 
@@ -35,11 +36,7 @@ Nyarch Linux
 
 ## 依赖
 
-使用了 `boost` 库的 `boost::asio::serial_port`
-
-`C++17` 的 `filesystem`
-
-建议使用 `g++-9.3`, `Boost 1.70` 以上版本
+建议使用 `g++-10.1`, `Boost 1.70` 以上版本
 
 ## 编译
 
