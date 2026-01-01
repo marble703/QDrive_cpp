@@ -111,16 +111,15 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
 
                 std::fill(buffer.begin(), buffer.end(), '\0');
             }
-        } else if (this->ioType_ == ioType::CAN) {
-            uint32_t id;
-            id = 0x500;
+        } // 当前会监听整个 CAN 总线的数据 
+        else if (this->ioType_ == ioType::CAN) {
             std::vector<uint8_t> data;
             while (true) {
                 if (this->stopReaderThread_.load())
                     break;
 
                 if (this->canBusPtr_->receiveFrame(data)) {
-                    std::string buffer = std::to_string(id) + ":";
+                    std::string buffer;
                     char hex[3];
                     for (auto b: data) {
                         std::snprintf(hex, sizeof(hex), "%02X", b);
