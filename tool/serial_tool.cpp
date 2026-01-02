@@ -6,7 +6,7 @@
 #include <thread>
 #include <memory>
 
-#include "serial/serial.hpp"
+#include "serial.hpp"
 
 using namespace qdriver::io;
 

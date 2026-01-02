@@ -1,4 +1,4 @@
-#include "can/can.hpp"
+#include "can.hpp"
 #include "interface.hpp"
 
 #include <iostream>

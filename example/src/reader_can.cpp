@@ -1,5 +1,5 @@
+#include "can.hpp"
 #include "interface.hpp"
-#include "can/can.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -7,7 +7,7 @@
 int main() {
     std::shared_ptr<qdriver::io::Can> canBusPtr = std::make_shared<qdriver::io::Can>("can0");
 
-    qdriver::interface::InterfaceBase interface(canBusPtr);
+    qdriver::interface::Interface interface(canBusPtr);
 
     if (interface.isPortOpen()) {
         std::cout << "CAN port opened successfully." << std::endl;

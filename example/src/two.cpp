@@ -1,5 +1,5 @@
 #include "interface.hpp"
-#include "serial/serial.hpp"
+#include "serial.hpp"
 
 #include <iostream>
 

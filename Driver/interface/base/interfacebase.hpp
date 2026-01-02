@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../io/can/can.hpp"
-#include "../io/serial/serial.hpp"
+#include "can.hpp"
+#include "serial.hpp"
 
 #include <thread>
 

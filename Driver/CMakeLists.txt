@@ -17,7 +17,8 @@ add_library(QDrive::driver ALIAS qdrive_driver)
 
 target_include_directories(qdrive_driver
 	PUBLIC
-			${CMAKE_CURRENT_SOURCE_DIR}/io
+			${CMAKE_CURRENT_SOURCE_DIR}/io/can
+			${CMAKE_CURRENT_SOURCE_DIR}/io/serial
 			${CMAKE_CURRENT_SOURCE_DIR}/interface
 
 )
