@@ -1,3 +1,5 @@
+#pragma once
+
 #include "base/interfacebase.hpp"
 
 #include <boost/numeric/conversion/cast.hpp>
@@ -6,17 +8,23 @@ namespace qdriver::interface {
 
 enum class PIDtype { KP, KI, KD };
 
+#if __cplusplus >= 202002L
+constexpr float PI = std::numbers::pi_v<float>; // c++20
+#else
+constexpr float PI = 3.14159265358979323846f * 2;
+#endif
+
 static const float MAX_CURRENT_CTRL_VALUE   = 10;
 static const float MIN_CURRENT_CTRL_VALUE   = -10;
 static const float MAX_SPEED_CTRL_VALUE     = 1000;
 static const float MIN_SPEED_CTRL_VALUE     = -1000;
-static const float MAX_ANGLE_CTRL_VALUE     = std::numbers::pi_v<float> * 2; // c++20
+static const float MAX_ANGLE_CTRL_VALUE     = PI * 2;
 static const float MIN_ANGLE_CTRL_VALUE     = 0;
-static const float MAX_STEPANGLE_CTRL_VALUE = std::numbers::pi_v<float> * 5;  // c++20
-static const float MIN_STEPANGLE_CTRL_VALUE = std::numbers::pi_v<float> * -5; // c++20
+static const float MAX_STEPANGLE_CTRL_VALUE = PI * 5;
+static const float MIN_STEPANGLE_CTRL_VALUE = PI * -5;
 class Interface: public InterfaceBase {
 public:
-Interface(std::shared_ptr<qdriver::io::Serial> serialPort);
+    Interface(std::shared_ptr<qdriver::io::Serial> serialPort);
     Interface(std::shared_ptr<qdriver::io::Can> canPort, uint32_t defalutSendCanID = -1);
 
     ~Interface() = default;

@@ -1,5 +1,4 @@
 #include "interfacebase.hpp"
-#include <cstdio>
 namespace qdriver::interface {
 
 InterfaceBase::InterfaceBase(std::shared_ptr<qdriver::io::Serial> serialPort):

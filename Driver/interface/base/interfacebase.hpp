@@ -1,7 +1,8 @@
+#pragma once
+
 #include "../io/can/can.hpp"
 #include "../io/serial/serial.hpp"
 
-#include <cstdint>
 #include <thread>
 
 namespace qdriver::interface {

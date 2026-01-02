@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstdint>
 #include <linux/can.h>
+
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -9,11 +10,7 @@ namespace qdriver::io {
 
 class Can {
 public:
-    explicit Can(
-        const std::string& ifname,
-        int sendCanID    = 0x400,
-        int receiveCanID = 0x500
-    );
+    explicit Can(const std::string& ifname, int sendCanID = 0x400, int receiveCanID = 0x500);
     ~Can();
 
     bool sendFrame(const std::vector<uint8_t>& data = {}, int id = -1);
