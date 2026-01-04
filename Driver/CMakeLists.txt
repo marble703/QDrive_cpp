@@ -11,6 +11,7 @@ add_library(qdrive_driver
 	io/serial/serial.cpp
 	interface/base/interfacebase.cpp
 	interface/interface.cpp
+	motor/motor.cpp
 )
 
 add_library(QDrive::driver ALIAS qdrive_driver)
@@ -20,6 +21,7 @@ target_include_directories(qdrive_driver
 			${CMAKE_CURRENT_SOURCE_DIR}/io/can
 			${CMAKE_CURRENT_SOURCE_DIR}/io/serial
 			${CMAKE_CURRENT_SOURCE_DIR}/interface
+			${CMAKE_CURRENT_SOURCE_DIR}/motor
 
 )
 
