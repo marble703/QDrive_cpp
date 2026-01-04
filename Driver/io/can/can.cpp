@@ -74,16 +74,38 @@ bool Can::receiveFrame(std::vector<uint8_t>& data) {
     if (sock_ < 0)
         return false;
 
-    can_frame frame;
-    int nbytes = read(sock_, &frame, sizeof(can_frame));
+    // 使用带超时的 select 避免在 read 上无限阻塞
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    FD_SET(sock_, &rfds);
 
-    if (nbytes < 0) {
-        // Error reading
+    // 100ms 超时
+    timeval tv;
+    tv.tv_sec  = 0;
+    tv.tv_usec = 100000; // 100 ms
+
+    int ret = select(sock_ + 1, &rfds, nullptr, nullptr, &tv);
+
+    // 超时或被信号中断，返回 false
+    if (ret <= 0) {
         return false;
     }
 
+    // 文件描述符不可读
+    if (!FD_ISSET(sock_, &rfds)) {
+        return false;
+    }
+
+    can_frame frame;
+    int nbytes = read(sock_, &frame, sizeof(can_frame));
+
+    // 读取错误
+    if (nbytes < 0) {
+        return false;
+    }
+    // 帧不完整
+
     if (nbytes < (int)sizeof(can_frame)) {
-        // Incomplete frame
         return false;
     }
 

@@ -1,8 +1,6 @@
 #pragma once
 
 #include <linux/can.h>
-
-#include <cstdint>
 #include <string>
 #include <vector>
 

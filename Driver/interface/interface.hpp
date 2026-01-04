@@ -11,7 +11,7 @@ enum class PIDtype { KP, KI, KD };
 #if __cplusplus >= 202002L
 constexpr float PI = std::numbers::pi_v<float>; // c++20
 #else
-constexpr float PI = 3.14159265358979323846f * 2;
+constexpr float PI = 3.14159265358979323846f;
 #endif
 
 static const float MAX_CURRENT_CTRL_VALUE   = 10;
@@ -186,6 +186,7 @@ public:
     bool configBaudRate(unsigned int baudRate);
 
 private:
+    // 安全转换 CAN_ID
     uint32_t externalCanID(int canID) const;
 
     // 将电流 -10A ~ 10A 映射到 int16 的 -32768 ~ 32767
