@@ -15,6 +15,7 @@ static const size_t HIGH_RECV_CAN_ID = 0x50F;
 enum class ioType {
     SERIAL,
     CAN,
+    NONE
 };
 
 struct SerialCommand {
