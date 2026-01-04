@@ -22,10 +22,11 @@ static const float MAX_ANGLE_CTRL_VALUE     = PI * 2;
 static const float MIN_ANGLE_CTRL_VALUE     = 0;
 static const float MAX_STEPANGLE_CTRL_VALUE = PI * 5;
 static const float MIN_STEPANGLE_CTRL_VALUE = PI * -5;
+
 class Interface: public InterfaceBase {
 public:
     Interface(std::shared_ptr<qdriver::io::Serial> serialPort);
-    Interface(std::shared_ptr<qdriver::io::Can> canPort, uint32_t defalutSendCanID = -1);
+    Interface(std::shared_ptr<qdriver::io::Can> canPort);
 
     ~Interface() = default;
 
@@ -54,7 +55,7 @@ public:
     /**
      * @brief 显示电压、电流、转速、控制模式等运行状态
      */
-    bool status(int canID = -1);
+    bool status(uint32_t canID = 0);
 
     // 控制指令
 
@@ -62,13 +63,13 @@ public:
      * @brief 使能电机
      * @note 注意未做基础校准无法使能
      */
-    bool enable(int canID = -1);
+    bool enable(uint32_t canID = 0);
 
     /**
      * @brief 失能电机
      * @note 电机失能后控制状态一直保留，重新使能恢复原有控制状态
      */
-    bool disable(int canID = -1);
+    bool disable(uint32_t canID = 0);
 
     /**
      * @brief 静默输出
@@ -93,7 +94,7 @@ public:
      *
      * @param current 单位 A
      */
-    bool ctrlCurrent(float current, int canID = -1);
+    bool ctrlCurrent(float current, uint32_t canID = 0);
 
     /**
      * @brief 速度控制模式
@@ -101,7 +102,7 @@ public:
      *
      * @param speed 单位 rpm
      */
-    bool ctrlSpeed(float speed, int canID = -1);
+    bool ctrlSpeed(float speed, uint32_t canID = 0);
 
     /**
      * @brief 角度控制模式
@@ -109,7 +110,7 @@ public:
      *
      * @param angle 单位 rad
      */
-    bool ctrlAngle(float angle, int canID = -1);
+    bool ctrlAngle(float angle, uint32_t canID = 0);
 
     /**
     * @brief 低速控制模式
@@ -117,7 +118,7 @@ public:
     *
     * @param speed 单位 rpm
     */
-    bool ctrlLowSpeed(float speed, int canID = -1);
+    bool ctrlLowSpeed(float speed, uint32_t canID = 0);
 
     /**
      * @brief 角度步进控制模式
@@ -125,7 +126,7 @@ public:
      *
      * @param angle 单位 rad
      */
-    bool ctrlStepAngle(float angle, int canID = -1);
+    bool ctrlStepAngle(float angle, uint32_t canID = 0);
 
     /**
      * @brief 储存当前配置参数
@@ -186,9 +187,6 @@ public:
     bool configBaudRate(unsigned int baudRate);
 
 private:
-    // 安全转换 CAN_ID
-    uint32_t externalCanID(int canID) const;
-
     // 将电流 -10A ~ 10A 映射到 int16 的 -32768 ~ 32767
     int16_t curentToCtrlValue(float current) const;
 
@@ -200,8 +198,6 @@ private:
 
     // 将速度 -5pi ~ 5pi 映射到 int16 的 -32768 ~ 32767
     int16_t stepAngleToCtrlValue(float angle) const;
-
-    int defalutSendCanID { -1 };
 };
 
 } // namespace qdriver::interface

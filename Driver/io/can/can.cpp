@@ -11,9 +11,7 @@
 
 namespace qdriver::io {
 
-Can::Can(const std::string& ifname, int sendCanID, int receiveCanID):
-    sendCanID_(sendCanID),
-    receiveCanID_(receiveCanID) {
+Can::Can(const std::string& ifname) {
     // 创建 Socket
     sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (sock_ < 0) {
@@ -47,15 +45,18 @@ Can::~Can() {
         close(sock_);
 }
 
-bool Can::sendFrame(const std::vector<uint8_t>& data, int id) {
+bool Can::sendFrame(const std::vector<uint8_t>& data, size_t id) {
     if (sock_ < 0)
         return false;
+    if (data.size() > 8) {
+        throw std::runtime_error("CAN frame data size exceeds 8 bytes");
+    }
+    if (id > 0x7FF) {
+        throw std::runtime_error("CAN frame ID exceeds 11 bits");
+    }
 
     can_frame frame;
     std::memset(&frame, 0, sizeof(frame));
-
-    if (id < 0)
-        id = this->sendCanID_;
 
     frame.can_id = id;
 
@@ -70,7 +71,7 @@ bool Can::sendFrame(const std::vector<uint8_t>& data, int id) {
     return write(sock_, &frame, sizeof(can_frame)) > 0;
 }
 
-bool Can::receiveFrame(std::vector<uint8_t>& data) {
+bool Can::receiveFrame(std::vector<uint8_t>& data, std::shared_ptr<size_t> id) {
     if (sock_ < 0)
         return false;
 
@@ -110,6 +111,8 @@ bool Can::receiveFrame(std::vector<uint8_t>& data) {
     }
 
     data.assign(frame.data, frame.data + frame.can_dlc);
+    if (id)
+        *id = frame.can_id;
     return true;
 }
 

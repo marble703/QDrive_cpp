@@ -3,8 +3,7 @@
 
 namespace qdriver::interface {
 Interface::Interface(std::shared_ptr<qdriver::io::Serial> serialPort): InterfaceBase(serialPort) {}
-Interface::Interface(std::shared_ptr<qdriver::io::Can> canPort, uint32_t defalutSendCanID):
-    InterfaceBase(canPort, defalutSendCanID) {}
+Interface::Interface(std::shared_ptr<qdriver::io::Can> canPort): InterfaceBase(canPort) {}
 
 bool Interface::help() {
     if (this->getIoType() == ioType::CAN) {
@@ -27,22 +26,18 @@ bool Interface::info() {
     return this->sendCommand({ .cmd = "info" });
 }
 
-bool Interface::status(int canID) {
+bool Interface::status(uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
-        return this->sendCommand(
-            { .id = this->externalCanID(canID), .ctrlCommand = 0x00, .ctrlValue = 1 }
-        );
+        return this->sendCommand({ .id = canID, .ctrlCommand = 0x00, .ctrlValue = 1 });
     } else if (this->getIoType() == ioType::SERIAL) {
         return this->sendCommand({ .cmd = "enable" });
     }
     return false;
 }
 
-bool Interface::enable(int canID) {
+bool Interface::enable(uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
-        return this->sendCommand(
-            { .id = this->externalCanID(canID), .ctrlCommand = 0x01, .ctrlValue = 1 }
-        );
+        return this->sendCommand({ .id = canID, .ctrlCommand = 0x01, .ctrlValue = 1 });
 
     } else if (this->getIoType() == ioType::SERIAL) {
         return this->sendCommand({ .cmd = "enable" });
@@ -50,11 +45,9 @@ bool Interface::enable(int canID) {
     return false;
 }
 
-bool Interface::disable(int canID) {
+bool Interface::disable(uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
-        return this->sendCommand(
-            { .id = this->externalCanID(canID), .ctrlCommand = 0x02, .ctrlValue = 1 }
-        );
+        return this->sendCommand({ .id = canID, .ctrlCommand = 0x02, .ctrlValue = 1 });
 
     } else if (this->getIoType() == ioType::SERIAL) {
         return this->sendCommand({ .cmd = "disable" });
@@ -76,12 +69,10 @@ bool Interface::reboot() {
     return this->sendCommand({ .cmd = "reboot" });
 }
 
-bool Interface::ctrlCurrent(float current, int canID) {
+bool Interface::ctrlCurrent(float current, uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id          = this->externalCanID(canID),
-              .ctrlCommand = 0x03,
-              .ctrlValue   = this->curentToCtrlValue(current) }
+            { .id = canID, .ctrlCommand = 0x03, .ctrlValue = this->curentToCtrlValue(current) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -92,12 +83,10 @@ bool Interface::ctrlCurrent(float current, int canID) {
     return false;
 }
 
-bool Interface::ctrlSpeed(float speed, int canID) {
+bool Interface::ctrlSpeed(float speed, uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id          = this->externalCanID(canID),
-              .ctrlCommand = 0x04,
-              .ctrlValue   = this->speedToCtrlValue(speed) }
+            { .id = canID, .ctrlCommand = 0x04, .ctrlValue = this->speedToCtrlValue(speed) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -108,12 +97,10 @@ bool Interface::ctrlSpeed(float speed, int canID) {
     return false;
 }
 
-bool Interface::ctrlAngle(float angle, int canID) {
+bool Interface::ctrlAngle(float angle, uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id          = this->externalCanID(canID),
-              .ctrlCommand = 0x05,
-              .ctrlValue   = this->angleToCtrlValue(angle) }
+            { .id = canID, .ctrlCommand = 0x05, .ctrlValue = this->angleToCtrlValue(angle) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -124,12 +111,10 @@ bool Interface::ctrlAngle(float angle, int canID) {
     return false;
 }
 
-bool Interface::ctrlLowSpeed(float speed, int canID) {
+bool Interface::ctrlLowSpeed(float speed, uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id          = this->externalCanID(canID),
-              .ctrlCommand = 0x06,
-              .ctrlValue   = this->speedToCtrlValue(speed) }
+            { .id = canID, .ctrlCommand = 0x06, .ctrlValue = this->speedToCtrlValue(speed) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -140,12 +125,10 @@ bool Interface::ctrlLowSpeed(float speed, int canID) {
     return false;
 }
 
-bool Interface::ctrlStepAngle(float angle, int canID) {
+bool Interface::ctrlStepAngle(float angle, uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id          = this->externalCanID(canID),
-              .ctrlCommand = 0x05,
-              .ctrlValue   = this->speedToCtrlValue(angle) }
+            { .id = canID, .ctrlCommand = 0x05, .ctrlValue = this->speedToCtrlValue(angle) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -245,14 +228,6 @@ bool Interface::configCanID(uint32_t canID) {
     return this->sendCommand(
         { .cmd = "config", .parameter = " can.id", .value = std::to_string(canID) }
     );
-}
-
-uint32_t Interface::externalCanID(int canID) const {
-    if (canID < 0) {
-        return boost::numeric_cast<uint32_t>(this->defalutSendCanID);
-    } else {
-        return boost::numeric_cast<uint32_t>(canID);
-    }
 }
 
 int16_t Interface::curentToCtrlValue(float current) const {

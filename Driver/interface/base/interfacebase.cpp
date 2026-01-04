@@ -66,7 +66,6 @@ bool InterfaceBase::sendCommand(const SerialCommand& command) {
 }
 
 bool InterfaceBase::sendCommand(const CanCommand& command) {
-    assert(command.id >= LOW_SEND_CAN_ID && command.id <= HIGH_SEND_CAN_ID);
 
     if (this->ioType_ == ioType::CAN) {
         if (this->canBusPtr_) {
