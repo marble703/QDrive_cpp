@@ -1,7 +1,8 @@
-#include "interface.hpp"
-#include "serial.hpp"
+#include "motor.hpp"
 
 #include <iostream>
+
+using qdriver::interface::ioType::SERIAL;
 
 int main() {
     auto ioContext = std::make_unique<qdriver::io::IoContext>();
@@ -15,23 +16,25 @@ int main() {
         qdriver::io::SerialPortBase::stop_bits::one
     );
 
-    qdriver::interface::Interface interface(serialPortPtr);
+    auto interfacePtr = std::make_shared<qdriver::interface::Interface>(serialPortPtr);
 
-    if (interface.isPortOpen()) {
+    if (interfacePtr->isPortOpen()) {
         std::cout << "port opened successfully." << std::endl;
     } else {
         std::cout << "Failed to open port." << std::endl;
         return 0;
     }
-    interface.help();
+
+    qdriver::motor::Motor motor(interfacePtr, "qd4310_0");
+
+    motor.enable(SERIAL);
     sleep(1);
-    interface.enable();
+    motor.ctrlAngle(0, SERIAL);
     sleep(1);
-    interface.ctrlAngle(0);
+    motor.ctrlAngle(std::numbers::pi_v<float> / 180 * 90, SERIAL);
     sleep(1);
-    interface.ctrlAngle(std::numbers::pi_v<float> / 180 * 90);
+    motor.disable(SERIAL);
     sleep(1);
-    interface.disable();
-    sleep(1);
+
     return 0;
 }
