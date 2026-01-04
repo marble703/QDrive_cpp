@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include "interface.hpp"
-#include "can/can.hpp"
+#include "can.hpp"
 
 using namespace qdriver::io;
 using namespace qdriver::interface;
