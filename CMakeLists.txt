@@ -8,6 +8,4 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(Driver)
 add_subdirectory(example)
-
-# 串口等小工具
 add_subdirectory(tool)

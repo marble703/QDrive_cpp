@@ -1,21 +1,12 @@
-#include <atomic>
-#include <csignal>
-#include <iostream>
-#include <iomanip>
-#include <memory>
-#include <string>
-#include <thread>
-#include <sstream>
-#include <cctype>
-#include <algorithm>
-
-#include "interface.hpp"
 #include "can.hpp"
+#include "interface.hpp"
+
+#include <iostream>
 
 using namespace qdriver::io;
 using namespace qdriver::interface;
 
-static std::atomic<bool> g_running{true};
+static std::atomic<bool> g_running { true };
 
 void handle_sigint(int) {
     g_running = false;
@@ -78,8 +69,9 @@ void print_help() {
 // 将输入字符串转换为小写
 std::string to_lower(const std::string& str) {
     std::string result = str;
-    std::transform(result.begin(), result.end(), result.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
     return result;
 }
 
@@ -112,9 +104,9 @@ int main(int argc, char** argv) {
     auto interface = std::make_unique<Interface>(can_bus);
 
     std::cout << "CAN接口已打开: " << opt.can_interface << std::endl;
-    std::cout << "发送CAN ID: 0x" << std::hex << opt.send_can_id 
-              << ", 接收CAN ID: 0x" << opt.receive_can_id << std::dec << std::endl;
-    
+    std::cout << "发送CAN ID: 0x" << std::hex << opt.send_can_id << ", 接收CAN ID: 0x"
+              << opt.receive_can_id << std::dec << std::endl;
+
     print_help();
 
     // 读取线程：后台接收CAN数据
@@ -124,8 +116,8 @@ int main(int argc, char** argv) {
             if (can_bus->receiveFrame(data)) {
                 std::cout << "\n[接收] ";
                 for (size_t i = 0; i < data.size(); ++i) {
-                    std::cout << std::hex << std::setw(2) << std::setfill('0') 
-                              << (int)data[i] << " ";
+                    std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)data[i]
+                              << " ";
                 }
                 std::cout << std::dec << std::endl;
                 std::cout << "> ";
@@ -201,7 +193,7 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float current = std::stof(tokens[1]);
-                int can_id = -1;
+                int can_id    = -1;
                 if (tokens.size() > 2) {
                     can_id = std::stoi(tokens[2], nullptr, 16);
                 }
@@ -216,7 +208,7 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float speed = std::stof(tokens[1]);
-                int can_id = -1;
+                int can_id  = -1;
                 if (tokens.size() > 2) {
                     can_id = std::stoi(tokens[2], nullptr, 16);
                 }
@@ -231,7 +223,7 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float angle = std::stof(tokens[1]);
-                int can_id = -1;
+                int can_id  = -1;
                 if (tokens.size() > 2) {
                     can_id = std::stoi(tokens[2], nullptr, 16);
                 }
@@ -246,7 +238,7 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float speed = std::stof(tokens[1]);
-                int can_id = -1;
+                int can_id  = -1;
                 if (tokens.size() > 2) {
                     can_id = std::stoi(tokens[2], nullptr, 16);
                 }
@@ -261,12 +253,13 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float angle = std::stof(tokens[1]);
-                int can_id = -1;
+                int can_id  = -1;
                 if (tokens.size() > 2) {
                     can_id = std::stoi(tokens[2], nullptr, 16);
                 }
                 if (interface->ctrlStepAngle(angle, can_id)) {
-                    std::cout << "✓ 步进角度控制命令已发送 (角度: " << angle << " rad)" << std::endl;
+                    std::cout << "✓ 步进角度控制命令已发送 (角度: " << angle << " rad)"
+                              << std::endl;
                 } else {
                     std::cout << "✗ 步进角度控制命令失败" << std::endl;
                 }
