@@ -1,14 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
 project(qdrive_tool_serial)
 
-add_executable(qdrive_serial_tool
-    serial_tool.cpp
-)
+function(add_qdrive_tool_executable target_name source_file)
+    add_executable(${target_name} ${source_file})
+    target_compile_features(${target_name} PRIVATE cxx_std_17)
+    target_link_libraries(${target_name} PRIVATE qdrive_driver)
+endfunction()
 
-target_compile_features(qdrive_serial_tool PRIVATE cxx_std_17)
-
-target_link_libraries(qdrive_serial_tool PRIVATE qdrive_driver)
-
-target_include_directories(qdrive_serial_tool PRIVATE
-    ${CMAKE_SOURCE_DIR}/Driver/io
-)
+add_qdrive_tool_executable(qdrive_tool_serial serial_tool.cpp)
+add_qdrive_tool_executable(qdrive_tool_can can_tool.cpp)
