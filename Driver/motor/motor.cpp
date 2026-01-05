@@ -124,8 +124,16 @@ bool Motor::ctrlSpeed(float speed, ioType ioType) {
 }
 
 bool Motor::ctrlAngle(float angle, ioType ioType) {
-    if (angle < this->minAngle_ || angle > this->maxAngle_) {
-        return false;
+    // 考虑环形限制
+    
+    if (this->minAngle_ < this->maxAngle_) {
+        if (angle < this->minAngle_ || angle > this->maxAngle_) {
+            return false;
+        }
+    } else if(this->minAngle_ > this->maxAngle_) {
+        if (angle > this->minAngle_ || angle < this->maxAngle_) {
+            return false;
+        }
     }
 
     if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {

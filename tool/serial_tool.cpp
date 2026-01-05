@@ -141,6 +141,5 @@ int main(int argc, char** argv) {
     }
     ofs.close();
 
-    // Serial 析构时会自动关闭串口
     return 0;
 }
