@@ -1,8 +1,7 @@
 #pragma once
 
+#include "logger.hpp"
 #include "interface.hpp"
-
-#include <spdlog/spdlog.h>
 
 namespace qdriver::motor {
 
@@ -15,7 +14,9 @@ public:
         std::shared_ptr<qdriver::interface::Interface> interfacePtr,
         const std::string& name = "defaultmotor",
         size_t sendCanID        = 0x400,
-        size_t receiveCanID     = 0x500
+        size_t receiveCanID     = 0x500,
+        std::shared_ptr<qdriver::logger::Logger> logger =
+            std::make_shared<qdriver::logger::Logger>()
     );
 
     bool addInterface(std::shared_ptr<qdriver::interface::Interface> interfacePtr);
@@ -201,5 +202,6 @@ private:
     size_t receiveCanID_;
 
     std::array<std::shared_ptr<qdriver::interface::Interface>, 2> interfaces_;
+    std::shared_ptr<qdriver::logger::Logger> logger_;
 };
 } // namespace qdriver::motor

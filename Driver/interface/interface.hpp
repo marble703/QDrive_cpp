@@ -25,8 +25,16 @@ static const float MIN_STEPANGLE_CTRL_VALUE = PI * -5;
 
 class Interface: public InterfaceBase {
 public:
-    Interface(std::shared_ptr<qdriver::io::Serial> serialPort);
-    Interface(std::shared_ptr<qdriver::io::Can> canPort);
+    Interface(
+        std::shared_ptr<qdriver::io::Serial> serialPort,
+        std::shared_ptr<qdriver::logger::Logger> logger =
+            std::make_shared<qdriver::logger::Logger>()
+    );
+    Interface(
+        std::shared_ptr<qdriver::io::Can> canPort,
+        std::shared_ptr<qdriver::logger::Logger> logger =
+            std::make_shared<qdriver::logger::Logger>()
+    );
 
     ~Interface() = default;
 

@@ -12,6 +12,7 @@ add_library(qdrive_driver
 	interface/base/interfacebase.cpp
 	interface/interface.cpp
 	motor/motor.cpp
+	logger/logger.cpp
 )
 
 add_library(QDrive::driver ALIAS qdrive_driver)
@@ -22,6 +23,7 @@ target_include_directories(qdrive_driver
 			${CMAKE_CURRENT_SOURCE_DIR}/io/serial
 			${CMAKE_CURRENT_SOURCE_DIR}/interface
 			${CMAKE_CURRENT_SOURCE_DIR}/motor
+			${CMAKE_CURRENT_SOURCE_DIR}/logger
 			${CMAKE_SOURCE_DIR}/third_party/spdlog/include
 )
 

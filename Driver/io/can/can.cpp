@@ -1,20 +1,16 @@
 #include "can.hpp"
 
-#include <cstring>
-#include <linux/can.h>
-#include <linux/can/raw.h>
-#include <net/if.h>
-#include <stdexcept>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
 namespace qdriver::io {
 
-Can::Can(const std::string& ifname) {
+Can::Can(const std::string& ifname, std::shared_ptr<qdriver::logger::Logger> logger):
+    ifname_(ifname),
+    logger_(logger ? logger : qdriver::logger::LoggerFactory::getDefaultLogger()) {
+    logger_->info("[CAN] Initializing CAN interface: {}", ifname_);
+
     // 创建 Socket
     sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (sock_ < 0) {
+        logger_->error("[CAN] Failed to create CAN socket for {}", ifname_);
         throw std::runtime_error("Failed to create CAN socket");
     }
 
@@ -24,6 +20,7 @@ Can::Can(const std::string& ifname) {
 
     // 获取接口索引
     if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
+        logger_->error("[CAN] Failed to get interface index for {}", ifname_);
         close(sock_);
         throw std::runtime_error("Failed to get interface index for " + ifname);
     }
@@ -35,23 +32,32 @@ Can::Can(const std::string& ifname) {
 
     // 绑定套接字
     if (bind(sock_, (sockaddr*)&addr, sizeof(addr)) < 0) {
+        logger_->error("[CAN] Failed to bind CAN socket to {}", ifname_);
         close(sock_);
         throw std::runtime_error("Failed to bind CAN socket to " + ifname);
     }
+
+    logger_->info("[CAN] CAN interface {} initialized successfully", ifname_);
 }
 
 Can::~Can() {
-    if (sock_ >= 0)
+    if (sock_ >= 0) {
+        logger_->info("[CAN] Closing CAN interface: {}", ifname_);
         close(sock_);
+    }
 }
 
 bool Can::sendFrame(const std::vector<uint8_t>& data, size_t id) {
-    if (sock_ < 0)
+    if (sock_ < 0) {
+        logger_->error("[CAN] Cannot send frame: socket not open");
         return false;
+    }
     if (data.size() > 8) {
+        logger_->error("[CAN] CAN frame data size exceeds 8 bytes: {}", data.size());
         throw std::runtime_error("CAN frame data size exceeds 8 bytes");
     }
     if (id > 0x7FF) {
+        logger_->error("[CAN] CAN frame ID exceeds 11 bits: 0x{:X}", id);
         throw std::runtime_error("CAN frame ID exceeds 11 bits");
     }
 
@@ -68,12 +74,20 @@ bool Can::sendFrame(const std::vector<uint8_t>& data, size_t id) {
 
     std::copy(data.begin(), data.begin() + frame.can_dlc, frame.data);
 
-    return write(sock_, &frame, sizeof(can_frame)) > 0;
+    bool result = write(sock_, &frame, sizeof(can_frame)) > 0;
+    if (result) {
+        logger_->trace("[CAN] Sent frame: ID=0x{:X}, DLC={}", id, frame.can_dlc);
+    } else {
+        logger_->error("[CAN] Failed to send frame: ID=0x{:X}", id);
+    }
+    return result;
 }
 
 bool Can::receiveFrame(std::vector<uint8_t>& data, std::shared_ptr<size_t> id) {
-    if (sock_ < 0)
+    if (sock_ < 0) {
+        logger_->error("[CAN] Cannot receive frame: socket not open");
         return false;
+    }
 
     // 使用带超时的 select 避免在 read 上无限阻塞
     fd_set rfds;
@@ -89,6 +103,9 @@ bool Can::receiveFrame(std::vector<uint8_t>& data, std::shared_ptr<size_t> id) {
 
     // 超时或被信号中断，返回 false
     if (ret <= 0) {
+        if (ret < 0) {
+            logger_->trace("[CAN] Select interrupted or error");
+        }
         return false;
     }
 
@@ -102,17 +119,21 @@ bool Can::receiveFrame(std::vector<uint8_t>& data, std::shared_ptr<size_t> id) {
 
     // 读取错误
     if (nbytes < 0) {
+        logger_->error("[CAN] Read error: {}", strerror(errno));
         return false;
     }
     // 帧不完整
 
     if (nbytes < (int)sizeof(can_frame)) {
+        logger_->warn("[CAN] Incomplete frame received: {} bytes", nbytes);
         return false;
     }
 
     data.assign(frame.data, frame.data + frame.can_dlc);
     if (id)
         *id = frame.can_id;
+
+    logger_->trace("[CAN] Received frame: ID=0x{:X}, DLC={}", frame.can_id, frame.can_dlc);
     return true;
 }
 

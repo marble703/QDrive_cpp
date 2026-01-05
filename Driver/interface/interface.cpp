@@ -1,9 +1,19 @@
 #include "interface.hpp"
-#include <algorithm>
 
 namespace qdriver::interface {
-Interface::Interface(std::shared_ptr<qdriver::io::Serial> serialPort): InterfaceBase(serialPort) {}
-Interface::Interface(std::shared_ptr<qdriver::io::Can> canPort): InterfaceBase(canPort) {}
+Interface::Interface(
+    std::shared_ptr<qdriver::io::Serial> serialPort,
+    std::shared_ptr<qdriver::logger::Logger> logger
+): InterfaceBase(serialPort, logger) {
+    logger_->info("[Interface] Created with SERIAL interface");
+}
+
+Interface::Interface(
+    std::shared_ptr<qdriver::io::Can> canPort,
+    std::shared_ptr<qdriver::logger::Logger> logger
+): InterfaceBase(canPort, 0x400, 0x500, logger) {
+    logger_->info("[Interface] Created with CAN interface");
+}
 
 bool Interface::help() {
     if (this->getIoType() == ioType::CAN) {
@@ -36,6 +46,7 @@ bool Interface::status(uint32_t canID) {
 }
 
 bool Interface::enable(uint32_t canID) {
+    logger_->info("[Interface] Enabling motor");
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand({ .id = canID, .ctrlCommand = 0x01, .ctrlValue = 1 });
 
@@ -46,6 +57,7 @@ bool Interface::enable(uint32_t canID) {
 }
 
 bool Interface::disable(uint32_t canID) {
+    logger_->info("[Interface] Disabling motor");
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand({ .id = canID, .ctrlCommand = 0x02, .ctrlValue = 1 });
 
@@ -70,6 +82,7 @@ bool Interface::reboot() {
 }
 
 bool Interface::ctrlCurrent(float current, uint32_t canID) {
+    logger_->debug("[Interface] Controlling current: {} A", current);
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
             { .id = canID, .ctrlCommand = 0x03, .ctrlValue = this->curentToCtrlValue(current) }
@@ -84,6 +97,7 @@ bool Interface::ctrlCurrent(float current, uint32_t canID) {
 }
 
 bool Interface::ctrlSpeed(float speed, uint32_t canID) {
+    logger_->debug("[Interface] Controlling speed: {} rad/s", speed);
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
             { .id = canID, .ctrlCommand = 0x04, .ctrlValue = this->speedToCtrlValue(speed) }

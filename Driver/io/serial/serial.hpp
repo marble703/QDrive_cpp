@@ -5,6 +5,8 @@
 
 #include <filesystem>
 
+#include "logger.hpp"
+
 namespace qdriver::io {
 
 using SerialPort     = boost::asio::serial_port;
@@ -59,7 +61,9 @@ public:
         IOContextPtrSelector ioContext,
         const std::filesystem::path& devicePath = "/dev/ttyACM0",
         SerialPortConfig config                 = SerialPortConfig {},
-        std::string portName                    = std::string()
+        std::string portName                    = std::string(),
+        std::shared_ptr<qdriver::logger::Logger> logger =
+            std::make_shared<qdriver::logger::Logger>()
     );
 
     Serial(
@@ -69,7 +73,9 @@ public:
         unsigned int data_bits                    = 8,
         SerialPortBase::parity::type parity       = SerialPortBase::parity::none,
         SerialPortBase::stop_bits::type stop_bits = SerialPortBase::stop_bits::one,
-        std::string portName                      = std::string()
+        std::string portName                      = std::string(),
+        std::shared_ptr<qdriver::logger::Logger> logger =
+            std::make_shared<qdriver::logger::Logger>()
     );
 
     ~Serial();
@@ -90,6 +96,7 @@ public:
 
 protected:
     const std::string portName_;
+    std::shared_ptr<qdriver::logger::Logger> logger_;
 
 private:
     SerialPort serialPort_;
