@@ -20,6 +20,7 @@
 io(通信功能封装) 
 -> interfacebase(基础通信协议封装) 
 -> interface(高级通信协议封装)
+-> motor(电机功能封装)
 剩下还没写
 
 ## 开发环境
@@ -34,7 +35,10 @@ Nyarch Linux
 
 ## 依赖
 
-建议使用 `g++-10.1`, `Boost 1.70` 以上版本
+本项目依赖:
+
+* [spdlog](https://github.com/gabime/spdlog) (MIT License)
+* [Boost](https://www.boost.org/) (BSL-1.0 License)
 
 ## 编译
 

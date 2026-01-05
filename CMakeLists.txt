@@ -6,6 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/spdlog/CMakeLists.txt")
+    add_subdirectory(third_party/spdlog)
+    set(SPDLOG_HEADER_ONLY ON)
+else()
+    find_package(spdlog REQUIRED)
+endif()
+
 add_subdirectory(Driver)
 add_subdirectory(example)
 add_subdirectory(tool)

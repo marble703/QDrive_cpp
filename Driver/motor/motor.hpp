@@ -1,4 +1,8 @@
+#pragma once
+
 #include "interface.hpp"
+
+# include <spdlog/spdlog.h>
 
 namespace qdriver::motor {
 

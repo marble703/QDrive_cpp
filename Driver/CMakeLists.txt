@@ -5,7 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 if(CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
-# Build the driver library
+
 add_library(qdrive_driver
 	io/can/can.cpp
 	io/serial/serial.cpp
@@ -22,8 +22,16 @@ target_include_directories(qdrive_driver
 			${CMAKE_CURRENT_SOURCE_DIR}/io/serial
 			${CMAKE_CURRENT_SOURCE_DIR}/interface
 			${CMAKE_CURRENT_SOURCE_DIR}/motor
-
+			${CMAKE_SOURCE_DIR}/third_party/spdlog/include
 )
 
-target_compile_features(qdrive_driver PUBLIC cxx_std_17)
+if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/spdlog/CMakeLists.txt")
+    if(NOT TARGET spdlog::spdlog_header_only)
+        add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
+    endif()
+else()
+    find_package(spdlog REQUIRED)
+endif()
+target_link_libraries(qdrive_driver PUBLIC spdlog::spdlog_header_only)
 
+target_compile_features(qdrive_driver PUBLIC cxx_std_17)
