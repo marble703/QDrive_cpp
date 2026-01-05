@@ -11,7 +11,7 @@
 - [x] 串口通信
 - [x] can 通信
 - [x] 接口
-- [ ] 日志
+- [x] 日志
 - [ ] 调试工具
 - [ ] Mock
 
@@ -42,7 +42,7 @@ Nyarch Linux
 
 ## 编译
 
-`cmake -S . -B build && cmake --build build -j`
+` cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j`
 
 ## 运行示例
 
