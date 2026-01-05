@@ -139,6 +139,14 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
     return true;
 }
 
+bool InterfaceBase::ReleaseReaderThread() {
+    this->stopReaderThread_.store(true);
+    if (this->readerThread_.joinable()) {
+        this->readerThread_.join();
+    }
+    return true;
+}
+
 bool InterfaceBase::isPortOpen() const {
     return this->ioType_ == ioType::SERIAL && this->serialPortPtr_->isOpen()
         || this->ioType_ == ioType::CAN && this->canBusPtr_->isOpen();

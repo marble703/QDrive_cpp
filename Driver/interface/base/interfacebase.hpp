@@ -53,6 +53,8 @@ public:
 
     bool startReaderThread(std::function<void(std::string&)> readerFunction);
 
+    bool ReleaseReaderThread();
+
 protected:
     const ioType ioType_;
 

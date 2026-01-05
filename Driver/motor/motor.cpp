@@ -124,6 +124,10 @@ bool Motor::ctrlSpeed(float speed, ioType ioType) {
 }
 
 bool Motor::ctrlAngle(float angle, ioType ioType) {
+    if (angle < this->minAngle_ || angle > this->maxAngle_) {
+        return false;
+    }
+
     if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {
         return this->getInterface(ioType::SERIAL)->ctrlAngle(angle);
     } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN)) {
@@ -217,7 +221,7 @@ bool Motor::configBaudRate(unsigned int baudRate) {
 }
 
 bool Motor::getCanID(size_t& sendCanID, size_t& receiveCanID) const {
-    sendCanID = this->sendCanID_;
+    sendCanID    = this->sendCanID_;
     receiveCanID = this->receiveCanID_;
     return true;
 }
@@ -234,4 +238,19 @@ bool Motor::setCanID(size_t sendCanID, size_t receiveCanID) {
     }
     return false;
 }
+
+bool Motor::startReaderThread(ioType ioType, std::function<void(std::string&)> readerFunction) {
+    if (this->getInterface(ioType)) {
+        return this->getInterface(ioType)->startReaderThread(readerFunction);
+    }
+    return false;
+}
+
+bool Motor::ReleaseReaderThread(ioType ioType) {
+    if (this->getInterface(ioType)) {
+        return this->getInterface(ioType)->ReleaseReaderThread();
+    }
+    return false;
+}
+
 } // namespace qdriver::motor

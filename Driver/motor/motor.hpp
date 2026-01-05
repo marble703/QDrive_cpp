@@ -2,7 +2,7 @@
 
 #include "interface.hpp"
 
-# include <spdlog/spdlog.h>
+#include <spdlog/spdlog.h>
 
 namespace qdriver::motor {
 
@@ -184,7 +184,18 @@ public:
      */
     bool configBaudRate(unsigned int baudRate);
 
+    /**
+     * @brief 获取读取线程
+     */
+    bool startReaderThread(ioType ioType, std::function<void(std::string&)> readerFunction);
+
+    bool ReleaseReaderThread(ioType ioType);
+
     std::string name_;
+
+    double minAngle_ { 0.0 };
+    double maxAngle_ { 2 * interface::PI };
+
 private:
     size_t sendCanID_;
     size_t receiveCanID_;
