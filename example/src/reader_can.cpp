@@ -1,22 +1,29 @@
 #include "can.hpp"
 #include "interface.hpp"
+#include "logger.hpp"
 
 #include <iomanip>
-#include <iostream>
+#include <sstream>
 
 int main() {
+    auto logger = qdriver::logger::LoggerFactory::createCombinedLogger(
+        "qdrive_reader_can",
+        "qdrive_reader_can.log",
+        spdlog::level::info
+    );
+
     std::shared_ptr<qdriver::io::Can> canBusPtr = std::make_shared<qdriver::io::Can>("can0");
 
     qdriver::interface::Interface interface(canBusPtr);
 
     if (interface.isPortOpen()) {
-        std::cout << "CAN port opened successfully." << std::endl;
+        logger->info("CAN port opened successfully.");
     } else {
-        std::cout << "Failed to open CAN port." << std::endl;
+        logger->error("Failed to open CAN port.");
         return 0;
     }
 
-    interface.startReaderThread([](std::string& buffer) {
+    interface.startReaderThread([logger](std::string& buffer) {
         auto pos = buffer.find(":");
         if (pos == std::string::npos) {
             return;
@@ -35,8 +42,9 @@ int main() {
         std::size_t dlc = dataHex.size() / 2; // 每两个字符是 1 字节
 
         // 输出格式参考 candump ：can0  400   [3]  00 00 00
-        std::cout << "can0  " << std::uppercase << std::hex << id << "   [" << std::dec << dlc
-                  << "]  ";
+        std::ostringstream oss;
+        oss << "can0  " << std::uppercase << std::hex << id << "   [" << std::dec << dlc
+            << "]  ";
 
         for (std::size_t i = 0; i + 1 < dataHex.size(); i += 2) {
             std::string byteStr  = dataHex.substr(i, 2);
@@ -47,14 +55,14 @@ int main() {
                 return;
             }
 
-            std::cout << std::setw(2) << std::setfill('0') << std::uppercase << std::hex << byteVal;
+            oss << std::setw(2) << std::setfill('0') << std::uppercase << std::hex << byteVal;
 
             if (i + 2 < dataHex.size()) {
-                std::cout << ' ';
+                oss << ' ';
             }
         }
 
-        std::cout << std::dec << std::endl;
+        logger->info("{}", oss.str());
     });
 
     while (true) {
