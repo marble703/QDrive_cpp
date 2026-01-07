@@ -148,12 +148,16 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
         else if (this->ioType_ == ioType::CAN) {
             logger_->debug("[InterfaceBase] Reader thread started for CAN");
             std::vector<uint8_t> data;
+            auto canIdPtr = std::make_shared<size_t>();
             while (true) {
                 if (this->stopReaderThread_.load())
                     break;
 
-                if (this->canBusPtr_->receiveFrame(data)) {
+                if (this->canBusPtr_->receiveFrame(data, canIdPtr)) {
                     std::string buffer;
+                    buffer += std::to_string(*canIdPtr);
+                    buffer += ":";
+
                     char hex[3];
                     for (auto b: data) {
                         std::snprintf(hex, sizeof(hex), "%02X", b);
