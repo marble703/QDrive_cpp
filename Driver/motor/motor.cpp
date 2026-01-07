@@ -12,8 +12,12 @@ Motor::Motor(
     sendCanID_(sendCanID),
     receiveCanID_(receiveCanID),
     logger_(logger ? logger : qdriver::logger::LoggerFactory::getDefaultLogger()) {
-    logger_->info("[Motor] Creating motor '{}' with CAN IDs: send=0x{:X}, recv=0x{:X}",
-                  name_, sendCanID_, receiveCanID_);
+    logger_->info(
+        "[Motor] Creating motor '{}' with CAN IDs: send=0x{:X}, recv=0x{:X}",
+        name_,
+        sendCanID_,
+        receiveCanID_
+    );
     this->addInterface(interfacePtr);
 }
 
@@ -28,11 +32,11 @@ bool Motor::addInterface(std::shared_ptr<qdriver::interface::Interface> interfac
         logger_->warn("[Motor] Interface type already exists for motor '{}'", name_);
         return false;
     }
-    
+
     std::shared_ptr<std::string> ioTypeName = std::make_shared<std::string>();
     interfacePtr->getIoType(ioTypeName);
     logger_->info("[Motor] Added {} interface to motor '{}'", *ioTypeName, name_);
-    
+
     this->interfaces_[ioEnum] = interfacePtr;
     return true;
 }
@@ -75,9 +79,9 @@ bool Motor::info() {
 }
 
 bool Motor::status(ioType ioType) {
-    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {
+    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL) || ioType == ioType::SERIAL) {
         return this->getInterface(ioType::SERIAL)->status();
-    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN)) {
+    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN) || ioType == ioType::CAN) {
         return this->getInterface(ioType::CAN)->status(this->sendCanID_);
     }
     return false;
@@ -85,9 +89,9 @@ bool Motor::status(ioType ioType) {
 
 bool Motor::enable(ioType ioType) {
     logger_->info("[Motor] Enabling motor '{}'", name_);
-    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {
+    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL) || ioType == ioType::SERIAL) {
         return this->getInterface(ioType::SERIAL)->enable();
-    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN)) {
+    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN) || ioType == ioType::CAN) {
         return this->getInterface(ioType::CAN)->enable(this->sendCanID_);
     }
     return false;
@@ -95,9 +99,9 @@ bool Motor::enable(ioType ioType) {
 
 bool Motor::disable(ioType ioType) {
     logger_->info("[Motor] Disabling motor '{}'", name_);
-    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {
+    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL) || ioType == ioType::SERIAL) {
         return this->getInterface(ioType::SERIAL)->disable();
-    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN)) {
+    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN) || ioType == ioType::CAN) {
         return this->getInterface(ioType::CAN)->disable(this->sendCanID_);
     }
     return false;
@@ -119,9 +123,9 @@ bool Motor::reboot() {
 
 bool Motor::ctrlCurrent(float current, ioType ioType) {
     logger_->debug("[Motor] Motor '{}' controlling current: {} A", name_, current);
-    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {
+    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL) || ioType == ioType::SERIAL) {
         return this->getInterface(ioType::SERIAL)->ctrlCurrent(current);
-    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN)) {
+    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN) || ioType == ioType::CAN) {
         return this->getInterface(ioType::CAN)->ctrlCurrent(current, this->sendCanID_);
     }
     return false;
@@ -129,9 +133,9 @@ bool Motor::ctrlCurrent(float current, ioType ioType) {
 
 bool Motor::ctrlSpeed(float speed, ioType ioType) {
     logger_->debug("[Motor] Motor '{}' controlling speed: {} rad/s", name_, speed);
-    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {
+    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL) || ioType == ioType::SERIAL) {
         return this->getInterface(ioType::SERIAL)->ctrlSpeed(speed);
-    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN)) {
+    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN) || ioType == ioType::CAN) {
         return this->getInterface(ioType::CAN)->ctrlSpeed(speed, this->sendCanID_);
     }
     return false;
@@ -141,40 +145,50 @@ bool Motor::ctrlAngle(float angle, ioType ioType) {
     // 考虑环形限制
     if (this->minAngle_ < this->maxAngle_) {
         if (angle < this->minAngle_ || angle > this->maxAngle_) {
-            logger_->warn("[Motor] Motor '{}' angle {} out of range [{}, {}]", 
-                         name_, angle, minAngle_, maxAngle_);
+            logger_->warn(
+                "[Motor] Motor '{}' angle {} out of range [{}, {}]",
+                name_,
+                angle,
+                minAngle_,
+                maxAngle_
+            );
             return false;
         }
     } else if (this->minAngle_ > this->maxAngle_) {
         if (angle > this->minAngle_ || angle < this->maxAngle_) {
-            logger_->warn("[Motor] Motor '{}' angle {} out of range [{}, {}]", 
-                         name_, angle, minAngle_, maxAngle_);
+            logger_->warn(
+                "[Motor] Motor '{}' angle {} out of range [{}, {}]",
+                name_,
+                angle,
+                minAngle_,
+                maxAngle_
+            );
             return false;
         }
     }
 
     logger_->debug("[Motor] Motor '{}' controlling angle: {} rad", name_, angle);
-    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {
+    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL) || ioType == ioType::SERIAL) {
         return this->getInterface(ioType::SERIAL)->ctrlAngle(angle);
-    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN)) {
+    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN) || ioType == ioType::CAN) {
         return this->getInterface(ioType::CAN)->ctrlAngle(angle, this->sendCanID_);
     }
     return false;
 }
 
 bool Motor::ctrlLowSpeed(float speed, ioType ioType) {
-    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {
+    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL) || ioType == ioType::SERIAL) {
         return this->getInterface(ioType::SERIAL)->ctrlLowSpeed(speed);
-    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN)) {
+    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN) || ioType == ioType::CAN) {
         return this->getInterface(ioType::CAN)->ctrlLowSpeed(speed, this->sendCanID_);
     }
     return false;
 }
 
 bool Motor::ctrlStepAngle(float angle, ioType ioType) {
-    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL)) {
+    if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL) || ioType == ioType::SERIAL) {
         return this->getInterface(ioType::SERIAL)->ctrlStepAngle(angle);
-    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN)) {
+    } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN) || ioType == ioType::CAN) {
         return this->getInterface(ioType::CAN)->ctrlStepAngle(angle, this->sendCanID_);
     }
     return false;
