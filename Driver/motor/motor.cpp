@@ -11,12 +11,10 @@ Motor::Motor(
     name_(name),
     sendCanID_(sendCanID),
     receiveCanID_(receiveCanID),
-    logger_(logger ? logger : qdriver::logger::LoggerFactory::getDefaultLogger()) {
+    logger_(logger) {
     logger_->info(
-        "[Motor] Creating motor '{}' with CAN IDs: send=0x{:X}, recv=0x{:X}",
-        name_,
-        sendCanID_,
-        receiveCanID_
+        "[Motor] Creating motor '{}'",
+        this->name_
     );
     this->addInterface(interfacePtr);
 }
