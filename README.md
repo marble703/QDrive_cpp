@@ -40,7 +40,9 @@ Nyarch Linux
 * [spdlog](https://github.com/gabime/spdlog) (MIT License)
 * [Boost](https://www.boost.org/) (BSL-1.0 License)
 
-## 编译
+## 拉取和编译
+
+` git submodule update --init --recursive`
 
 ` cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j`
 

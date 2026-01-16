@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
-    set(CMAKE_BUILD_TYPE "Debug")
+    set(CMAKE_BUILD_TYPE "Release")
 endif()
 
 add_library(qdrive_driver
@@ -32,8 +32,9 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/spdlog/CMakeLists.txt")
         add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
     endif()
 else()
-    find_package(spdlog REQUIRED)
+    message("Please try to init submodule")
 endif()
+
 target_link_libraries(qdrive_driver PUBLIC spdlog::spdlog_header_only)
 
 target_compile_features(qdrive_driver PUBLIC cxx_std_17)
