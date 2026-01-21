@@ -7,5 +7,5 @@ function(add_qdrive_tool_executable target_name source_file)
     target_link_libraries(${target_name} PRIVATE qdrive_driver)
 endfunction()
 
-add_qdrive_tool_executable(qdrive_tool_serial serial_tool.cpp)
-add_qdrive_tool_executable(qdrive_tool_can can_tool.cpp)
+add_qdrive_tool_executable(qdrive_tool_serial io/serial_tool.cpp)
+add_qdrive_tool_executable(qdrive_tool_can io/can_tool.cpp)
