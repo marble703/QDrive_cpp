@@ -144,6 +144,8 @@ public:
     /**
      * @brief 配置速度控制的 PID 参数
      * 
+     * @pre 仅对串口接口有效
+     * 
      * @param value 参数值
      * @param pidType 参数类型
      */
@@ -151,6 +153,8 @@ public:
 
     /**
      * @brief 配置角度控制的 PID 参数
+     * 
+     * @pre 仅对串口接口有效
      * 
      * @param value 参数值
      * @param pidType 参数类型
@@ -160,12 +164,16 @@ public:
     /**
      * @brief 配置速度限幅
      * 
+     * @pre 仅对串口接口有效
+     * 
      * @param speed 单位 rpm
      */
     bool configLimitSpeed(float speed);
 
     /**
      * @brief 配置电流限幅
+     * 
+     * @pre 仅对串口接口有效
      * 
      * @param current 单位 A
      */
@@ -174,12 +182,16 @@ public:
     /**
      * @brief 配置 CAN ID
      * 
+     * @pre 仅对串口接口有效
+     * 
      * @param canID CAN ID 限制 0 - 8
      */
     bool configCanID(uint32_t canID);
 
     /**
      * @brief 配置串口波特率
+     * 
+     * @pre 仅对串口接口有效
      * 
      * @param baudRate 波特率
      */
