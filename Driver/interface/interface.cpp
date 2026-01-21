@@ -38,9 +38,9 @@ bool Interface::info() {
 
 bool Interface::status(uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
-        return this->sendCommand({ .id = canID, .ctrlCommand = 0x00, .ctrlValue = 1 });
+        return this->sendCommand({ .id = canID, .ctrlCommand = 0x00, .ctrlValue = 0 });
     } else if (this->getIoType() == ioType::SERIAL) {
-        return this->sendCommand({ .cmd = "enable" });
+        return this->sendCommand({ .cmd = "status" });
     }
     return false;
 }
