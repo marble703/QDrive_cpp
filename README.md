@@ -40,7 +40,12 @@ Nyarch Linux
 * [spdlog](https://github.com/gabime/spdlog) (MIT License)
 * [Boost](https://www.boost.org/) (BSL-1.0 License)
 
+
 ## 拉取和编译
+
+(如果需要调试界面)
+
+`sudo apt install libglfw3-dev pkg-config`
 
 ` git submodule update --init --recursive`
 
