@@ -11,3 +11,4 @@ log/
 *.txt
 *demo*
 *.log
+*.ini
