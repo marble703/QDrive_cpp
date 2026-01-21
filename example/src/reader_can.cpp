@@ -1,9 +1,5 @@
-#include "can.hpp"
-#include "interface.hpp"
 #include "logger.hpp"
-
-#include <iomanip>
-#include <sstream>
+#include "motor.hpp"
 
 int main() {
     auto logger = qdriver::logger::LoggerFactory::createCombinedLogger(
@@ -14,16 +10,18 @@ int main() {
 
     std::shared_ptr<qdriver::io::Can> canBusPtr = std::make_shared<qdriver::io::Can>("can0");
 
-    qdriver::interface::Interface interface(canBusPtr);
+    auto interfacePtr = std::make_shared<qdriver::interface::Interface>(canBusPtr);
 
-    if (interface.isPortOpen()) {
+    qdriver::motor::Motor motor(interfacePtr, "qd4310_0", 0x400, 0x500);
+
+    if (interfacePtr->isPortOpen()) {
         logger->info("CAN port opened successfully.");
     } else {
         logger->error("Failed to open CAN port.");
         return 0;
     }
 
-    interface.startReaderThread([logger](std::string& buffer) {
+    interfacePtr->startReaderThread([logger](std::string& buffer) {
         auto pos = buffer.find(":");
         if (pos == std::string::npos) {
             return;
@@ -43,8 +41,7 @@ int main() {
 
         // 输出格式参考 candump ：can0  400   [3]  00 00 00
         std::ostringstream oss;
-        oss << "can0  " << std::uppercase << std::hex << id << "   [" << std::dec << dlc
-            << "]  ";
+        oss << "can0  " << std::uppercase << std::hex << id << "   [" << std::dec << dlc << "]  ";
 
         for (std::size_t i = 0; i + 1 < dataHex.size(); i += 2) {
             std::string byteStr  = dataHex.substr(i, 2);

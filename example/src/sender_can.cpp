@@ -5,8 +5,7 @@
 using qdriver::interface::ioType::CAN;
 
 int main() {
-    std::shared_ptr<qdriver::io::Can> canBusPtr =
-        std::make_shared<qdriver::io::Can>("can0");
+    std::shared_ptr<qdriver::io::Can> canBusPtr = std::make_shared<qdriver::io::Can>("can0");
 
     auto interfacePtr = std::make_shared<qdriver::interface::Interface>(canBusPtr);
 
@@ -18,7 +17,6 @@ int main() {
     }
 
     qdriver::motor::Motor motor(interfacePtr, "qd4310_0", 0x400, 0x500);
-
 
     motor.enable(CAN);
     sleep(1);
