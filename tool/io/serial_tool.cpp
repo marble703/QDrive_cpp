@@ -1,23 +1,18 @@
-#include <atomic>
-#include <csignal>
 #include <fstream>
 #include <iostream>
-#include <string>
-#include <thread>
-#include <memory>
 
 #include "serial.hpp"
 
 using namespace qdriver::io;
 
-static std::atomic<bool> g_running{true};
+static std::atomic<bool> g_running { true };
 
 void handle_sigint(int) {
     g_running = false;
 }
 
 struct Options {
-    std::string port    = "/dev/ttyACM0";
+    std::string port    = "/dev/QD4310-1";
     uint32_t baud       = 115200;
     std::string outfile = "serial_out.txt";
     std::size_t chunk   = 256; // 每次读取的字节数
@@ -67,7 +62,7 @@ int main(int argc, char** argv) {
     }
 
     // 准备 IO 上下文
-    auto io_ctx  = std::make_shared<IoContext>();
+    auto io_ctx = std::make_shared<IoContext>();
     IOContextPtrSelector io_sel(io_ctx);
 
     // 配置串口（当前实现只支持设置波特率/数据位/校验位/停止位）
@@ -107,7 +102,7 @@ int main(int argc, char** argv) {
 
         while (g_running.load()) {
             auto bytesRead = std::make_shared<std::size_t>(0);
-            bool ok = ser->read(buf, opt.chunk, bytesRead);
+            bool ok        = ser->read(buf, opt.chunk, bytesRead);
             if (!ok) {
                 std::cerr << "读串口失败" << std::endl;
                 continue;

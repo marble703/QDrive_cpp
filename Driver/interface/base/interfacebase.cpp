@@ -24,8 +24,11 @@ InterfaceBase::InterfaceBase(
     sendCanID_(sendCanID),
     recvCanID_(recvCanID),
     logger_(logger ? logger : qdriver::logger::LoggerFactory::getDefaultLogger()) {
-    logger_->info("[InterfaceBase] Initialized with CAN interface: sendID=0x{:X}, recvID=0x{:X}", 
-                  sendCanID_, recvCanID_);
+    logger_->info(
+        "[InterfaceBase] Initialized with CAN interface: sendID=0x{:X}, recvID=0x{:X}",
+        sendCanID_,
+        recvCanID_
+    );
 }
 
 InterfaceBase::~InterfaceBase() {
@@ -86,7 +89,6 @@ bool InterfaceBase::sendCommand(const SerialCommand& command) {
 }
 
 bool InterfaceBase::sendCommand(const CanCommand& command) {
-
     if (this->ioType_ == ioType::CAN) {
         if (this->canBusPtr_) {
             std::vector<uint8_t> data;
@@ -94,8 +96,12 @@ bool InterfaceBase::sendCommand(const CanCommand& command) {
             data.push_back(static_cast<uint8_t>(command.ctrlValue & 0xFF));
             data.push_back(static_cast<uint8_t>((command.ctrlValue >> 8) & 0xFF));
 
-            logger_->debug("[InterfaceBase] Sending CAN command: ID=0x{:X}, cmd=0x{:X}, value={}",
-                          command.id, command.ctrlCommand, command.ctrlValue);
+            logger_->debug(
+                "[InterfaceBase] Sending CAN command: ID=0x{:X}, cmd=0x{:X}, value={}",
+                command.id,
+                command.ctrlCommand,
+                command.ctrlValue
+            );
             bool result = this->canBusPtr_->sendFrame(data, command.id);
             if (!result) {
                 logger_->error("[InterfaceBase] Failed to send CAN command");
@@ -111,7 +117,7 @@ bool InterfaceBase::sendCommand(const CanCommand& command) {
     } else {
         logger_->error("[InterfaceBase] Unknown IO type");
         throw std::runtime_error("Unknown IO type");
-    }
+    };
 
     return false;
 }
@@ -144,8 +150,9 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
                 std::fill(buffer.begin(), buffer.end(), '\0');
             }
             logger_->debug("[InterfaceBase] Reader thread stopped for SERIAL");
-        } // 当前会监听整个 CAN 总线的数据 
-        else if (this->ioType_ == ioType::CAN) {
+        } // 当前会监听整个 CAN 总线的数据
+        else if (this->ioType_ == ioType::CAN)
+        {
             logger_->debug("[InterfaceBase] Reader thread started for CAN");
             std::vector<uint8_t> data;
             auto canIdPtr = std::make_shared<size_t>();

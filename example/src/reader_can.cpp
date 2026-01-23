@@ -2,9 +2,8 @@
 #include "motor.hpp"
 
 int main() {
-    auto logger = qdriver::logger::LoggerFactory::createCombinedLogger(
+    auto logger = qdriver::logger::LoggerFactory::createConsoleLogger(
         "qdrive_reader_can",
-        "qdrive_reader_can.log",
         spdlog::level::info
     );
 
@@ -63,7 +62,8 @@ int main() {
     });
 
     while (true) {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        motor.status();
     }
 
     return 0;
