@@ -12,16 +12,17 @@
 - [x] can 通信
 - [x] 接口
 - [x] 日志
-- [ ] 调试工具
+- [x] 调试工具
 - [ ] Mock
 
 ## 代码结构
 
-io(通信功能封装) 
+Driver(驱动部分)
+-> io(通信功能封装) 
 -> interfacebase(基础通信协议封装) 
 -> interface(高级通信协议封装)
 -> motor(电机功能封装)
-剩下还没写
+logger(日志功能封装)
 
 ## 开发环境
 
@@ -39,7 +40,7 @@ Nyarch Linux
 
 * [spdlog](https://github.com/gabime/spdlog) (MIT License)
 * [Boost](https://www.boost.org/) (BSL-1.0 License)
-
+* [imgui](https://github.com/ocornut/imgui) (MIT License)
 
 ## 拉取和编译
 
@@ -50,6 +51,8 @@ Nyarch Linux
 ` git submodule update --init --recursive`
 
 ` cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j`
+
+可以设置 `WITHOUT_GUI=ON` 参数忽略调试界面及其 imgui 依赖
 
 ## 运行示例
 

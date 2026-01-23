@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
 project(qdrive_gui)
 
+if (GUI_DISABLED)
+    message(STATUS "GUI build is disabled.")
+    return()
+endif()
+
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/imgui)
 
 find_package(OpenGL REQUIRED)

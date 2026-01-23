@@ -14,13 +14,13 @@ void handle_sigint(int) {
 struct Options {
     std::string port    = "/dev/QD4310-1";
     uint32_t baud       = 115200;
-    std::string outfile = "serial_out.txt";
+    std::string outfile = "serial_out.log";
     std::size_t chunk   = 256; // 每次读取的字节数
 };
 
 void print_usage(const char* prog) {
     std::cout << "用法: " << prog << " -p <port> -b <baud> -o <outfile> [-s <chunk>]" << std::endl
-              << "示例: " << prog << " -p /dev/ttyUSB0 -b 115200 -o data.txt -s 512" << std::endl;
+              << "示例: " << prog << " -p /dev/ttyUSB0 -b 115200 -o data.log -s 512" << std::endl;
 }
 
 bool parse_args(int argc, char** argv, Options& opt) {
