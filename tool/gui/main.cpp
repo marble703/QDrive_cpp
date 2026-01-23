@@ -6,8 +6,8 @@
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 
-#include "motor_controller.hpp"
 #include "app_config.hpp"
+#include "motor_controller.hpp"
 
 // Forward declaration of helper
 static void glfw_error_callback(int error, const char* description) {
@@ -56,8 +56,7 @@ int main(int, char**) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    GLFWwindow* window =
-        glfwCreateWindow(1280, 720, "QDrive Motor Tuner", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "QDrive Motor Tuner", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
@@ -144,11 +143,11 @@ int main(int, char**) {
                     static_cast<uint32_t>(recvIdInput)
                 );
                 if (motor.init(serialDev, canIf)) {
-                    connected = true;
-                    appCfg.serialPort = serialDev;
+                    connected           = true;
+                    appCfg.serialPort   = serialDev;
                     appCfg.canInterface = canIf;
-                    appCfg.sendIdHex = sendIdInput;
-                    appCfg.recvIdHex = recvIdInput;
+                    appCfg.sendIdHex    = sendIdInput;
+                    appCfg.recvIdHex    = recvIdInput;
                     saveConfig(appCfg);
                 }
             }
@@ -233,9 +232,11 @@ int main(int, char**) {
                     MAX_SPEED_CTRL_VALUE
                 );
                 ImGui::SameLine();
-                bool inputChanged = ImGui::InputFloat("##SpeedInput", &targetSpeed, 1.0f, 10.0f, "%.2f");
+                bool inputChanged =
+                    ImGui::InputFloat("##SpeedInput", &targetSpeed, 1.0f, 10.0f, "%.2f");
                 if (inputChanged) {
-                    targetSpeed = std::clamp(targetSpeed, MIN_SPEED_CTRL_VALUE, MAX_SPEED_CTRL_VALUE);
+                    targetSpeed =
+                        std::clamp(targetSpeed, MIN_SPEED_CTRL_VALUE, MAX_SPEED_CTRL_VALUE);
                 }
                 if (sliderChanged || inputChanged) {
                     motor.setTargetSpeed(targetSpeed);
@@ -248,9 +249,11 @@ int main(int, char**) {
                     MAX_ANGLE_CTRL_VALUE
                 );
                 ImGui::SameLine();
-                bool inputChanged = ImGui::InputFloat("##AngleInput", &targetAngle, 0.1f, 1.0f, "%.3f");
+                bool inputChanged =
+                    ImGui::InputFloat("##AngleInput", &targetAngle, 0.1f, 1.0f, "%.3f");
                 if (inputChanged) {
-                    targetAngle = std::clamp(targetAngle, MIN_ANGLE_CTRL_VALUE, MAX_ANGLE_CTRL_VALUE);
+                    targetAngle =
+                        std::clamp(targetAngle, MIN_ANGLE_CTRL_VALUE, MAX_ANGLE_CTRL_VALUE);
                 }
                 if (sliderChanged || inputChanged) {
                     motor.setTargetAngle(targetAngle);
@@ -263,9 +266,11 @@ int main(int, char**) {
                     MAX_CURRENT_CTRL_VALUE
                 );
                 ImGui::SameLine();
-                bool inputChanged = ImGui::InputFloat("##CurrentInput", &targetCurrent, 0.1f, 1.0f, "%.2f");
+                bool inputChanged =
+                    ImGui::InputFloat("##CurrentInput", &targetCurrent, 0.1f, 1.0f, "%.2f");
                 if (inputChanged) {
-                    targetCurrent = std::clamp(targetCurrent, MIN_CURRENT_CTRL_VALUE, MAX_CURRENT_CTRL_VALUE);
+                    targetCurrent =
+                        std::clamp(targetCurrent, MIN_CURRENT_CTRL_VALUE, MAX_CURRENT_CTRL_VALUE);
                 }
                 if (sliderChanged || inputChanged) {
                     motor.setTargetCurrent(targetCurrent);
@@ -284,9 +289,9 @@ int main(int, char**) {
             }
 
             ConfigSnapshot cfg = motor.getConfigSnapshot();
-            bool hasAnyConfig  = cfg.hasSpeedKp || cfg.hasSpeedKi || cfg.hasSpeedKd
-                || cfg.hasAngleKp || cfg.hasAngleKi || cfg.hasAngleKd
-                || cfg.hasLimitSpd || cfg.hasLimitCur || cfg.hasCanId || cfg.hasCanBaud;
+            bool hasAnyConfig = cfg.hasSpeedKp || cfg.hasSpeedKi || cfg.hasSpeedKd || cfg.hasAngleKp
+                || cfg.hasAngleKi || cfg.hasAngleKd || cfg.hasLimitSpd || cfg.hasLimitCur
+                || cfg.hasCanId || cfg.hasCanBaud;
             if (hasAnyConfig) {
                 ImGui::Text("Parsed Config:");
                 if (cfg.hasSpeedKp)
@@ -316,20 +321,30 @@ int main(int, char**) {
             ImGui::SameLine();
             if (ImGui::Button("Apply Config to Inputs")) {
                 ConfigSnapshot snap = motor.getConfigSnapshot();
-                bool anyCfg = snap.hasSpeedKp || snap.hasSpeedKi || snap.hasSpeedKd ||
-                    snap.hasAngleKp || snap.hasAngleKi || snap.hasAngleKd ||
-                    snap.hasLimitSpd || snap.hasLimitCur || snap.hasCanId || snap.hasCanBaud;
+                bool anyCfg         = snap.hasSpeedKp || snap.hasSpeedKi || snap.hasSpeedKd
+                    || snap.hasAngleKp || snap.hasAngleKi || snap.hasAngleKd || snap.hasLimitSpd
+                    || snap.hasLimitCur || snap.hasCanId || snap.hasCanBaud;
                 if (anyCfg) {
-                    if (snap.hasSpeedKp) speedKP = snap.speedKp;
-                    if (snap.hasSpeedKi) speedKI = snap.speedKi;
-                    if (snap.hasSpeedKd) speedKD = snap.speedKd;
-                    if (snap.hasAngleKp) angleKP = snap.angleKp;
-                    if (snap.hasAngleKi) angleKI = snap.angleKi;
-                    if (snap.hasAngleKd) angleKD = snap.angleKd;
-                    if (snap.hasLimitSpd) limitSpeed = snap.limitSpeed;
-                    if (snap.hasLimitCur) limitCurrent = snap.limitCurrent;
-                    if (snap.hasCanId) configCanId = snap.canId;
-                    if (snap.hasCanBaud) configBaud = snap.canBaud;
+                    if (snap.hasSpeedKp)
+                        speedKP = snap.speedKp;
+                    if (snap.hasSpeedKi)
+                        speedKI = snap.speedKi;
+                    if (snap.hasSpeedKd)
+                        speedKD = snap.speedKd;
+                    if (snap.hasAngleKp)
+                        angleKP = snap.angleKp;
+                    if (snap.hasAngleKi)
+                        angleKI = snap.angleKi;
+                    if (snap.hasAngleKd)
+                        angleKD = snap.angleKd;
+                    if (snap.hasLimitSpd)
+                        limitSpeed = snap.limitSpeed;
+                    if (snap.hasLimitCur)
+                        limitCurrent = snap.limitCurrent;
+                    if (snap.hasCanId)
+                        configCanId = snap.canId;
+                    if (snap.hasCanBaud)
+                        configBaud = snap.canBaud;
                     std::cout << "[ConfigApply] Applied config to UI inputs." << std::endl;
                 } else {
                     std::cout << "[ConfigApply] No parsed config to apply." << std::endl;
