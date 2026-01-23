@@ -26,10 +26,11 @@ target_include_directories(imgui_combo PUBLIC
 )
 target_link_libraries(imgui_combo PUBLIC glfw OpenGL::GL)
 
-add_executable(qdrive_gui main.cpp)
+add_executable(qdrive_gui main.cpp motor_controller.cpp)
 target_include_directories(qdrive_gui PRIVATE 
     ${imgui_SOURCE_DIR} 
     ${imgui_SOURCE_DIR}/backends
     ../../Driver
+    .
 )
 target_link_libraries(qdrive_gui PRIVATE imgui_combo qdrive_driver)
