@@ -1,7 +1,7 @@
 #pragma once
 
-#include "logger.hpp"
 #include "interface.hpp"
+#include "logger.hpp"
 
 namespace qdriver::motor {
 
@@ -196,6 +196,13 @@ public:
      * @param baudRate 波特率
      */
     bool configBaudRate(unsigned int baudRate);
+
+    /**
+    * @brief 获取当前配置参数
+    * 
+    * @pre 仅对串口接口有效
+    */
+    bool getConfig();
 
     /**
      * @brief 获取读取线程

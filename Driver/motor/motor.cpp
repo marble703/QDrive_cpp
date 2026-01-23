@@ -12,10 +12,7 @@ Motor::Motor(
     sendCanID_(sendCanID),
     receiveCanID_(receiveCanID),
     logger_(logger) {
-    logger_->info(
-        "[Motor] Creating motor '{}'",
-        this->name_
-    );
+    logger_->info("[Motor] Creating motor '{}'", this->name_);
     this->addInterface(interfacePtr);
 }
 
@@ -273,6 +270,13 @@ bool Motor::setCanID(size_t sendCanID, size_t receiveCanID) {
         this->sendCanID_    = sendCanID;
         this->receiveCanID_ = receiveCanID;
         return true;
+    }
+    return false;
+}
+
+bool Motor::getConfig() {
+    if (this->getInterface(ioType::SERIAL)) {
+        return this->getInterface(ioType::SERIAL)->getConfig();
     }
     return false;
 }

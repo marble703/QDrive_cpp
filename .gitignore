@@ -12,3 +12,4 @@ log/
 *demo*
 *.log
 *.ini
+*.conf

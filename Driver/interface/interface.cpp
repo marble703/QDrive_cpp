@@ -253,6 +253,15 @@ bool Interface::configBaudRate(unsigned int baudRate) {
     );
 }
 
+bool Interface::getConfig() {
+    if (this->getIoType() == ioType::CAN) {
+        throw std::runtime_error("ConfigBaudRate command is not supported for CAN interface");
+    }
+    return this->sendCommand(
+        { .cmd = "config", .parameter = " --list", .value = "" }
+    );
+}
+
 int16_t Interface::curentToCtrlValue(float current) const {
     float scaled = (std::clamp(current, MIN_CURRENT_CTRL_VALUE, MAX_CURRENT_CTRL_VALUE)
                     - MIN_CURRENT_CTRL_VALUE)

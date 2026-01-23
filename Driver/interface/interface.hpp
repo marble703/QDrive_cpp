@@ -206,6 +206,13 @@ public:
      */
     bool configBaudRate(unsigned int baudRate);
 
+    /**
+     * @brief 获取当前配置参数
+     * 
+     * @pre 仅对串口接口有效
+     */
+    bool getConfig();
+
 private:
     // 将电流 -10A ~ 10A 映射到 int16 的 -32768 ~ 32767
     int16_t curentToCtrlValue(float current) const;
