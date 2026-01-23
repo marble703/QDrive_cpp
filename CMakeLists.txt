@@ -19,7 +19,7 @@ else()
     set(GUI_DISABLED OFF)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/spdlog/CMakeLists.txt")
+if(EXISTS "${PROJECT_SOURCE_DIR}/third_party/spdlog/CMakeLists.txt")
     add_subdirectory(third_party/spdlog)
     set(SPDLOG_HEADER_ONLY ON)
 else()

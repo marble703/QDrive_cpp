@@ -24,12 +24,12 @@ target_include_directories(qdrive_driver
 			${CMAKE_CURRENT_SOURCE_DIR}/interface
 			${CMAKE_CURRENT_SOURCE_DIR}/motor
 			${CMAKE_CURRENT_SOURCE_DIR}/logger
-			${CMAKE_SOURCE_DIR}/third_party/spdlog/include
+			${PROJECT_SOURCE_DIR}/third_party/spdlog/include
 )
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/spdlog/CMakeLists.txt")
+if(EXISTS "${PROJECT_SOURCE_DIR}/third_party/spdlog/CMakeLists.txt")
     if(NOT TARGET spdlog::spdlog_header_only)
-        add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
+        add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
     endif()
 else()
     message("Please try to init submodule")
