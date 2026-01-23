@@ -8,7 +8,6 @@
 build/
 log/
 
-*.txt
 *demo*
 *.log
 *.ini
