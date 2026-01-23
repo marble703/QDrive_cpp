@@ -13,7 +13,6 @@
 - [x] 接口
 - [x] 日志
 - [x] 调试工具
-- [ ] Mock
 
 ## 代码结构
 
@@ -78,7 +77,7 @@ can：
 `./build/example/qdrive_example_reader_can`
 或是使用 `candump`
 
-# 脚本
+## 脚本
 
 设置 usb rule
 
@@ -86,6 +85,20 @@ can：
 chmod +x create-udev-rule.sh
 ./script/create-udev-rule.sh /dev/ttyACM0 QD4310-0 
 ```
+
+## 工具
+
+调试界面
+
+`./build/tool/gui/qdrive_gui`
+
+串口调试工具
+
+`./build/tool/serial/qdrive_tool_serial`
+
+CAN调试工具
+
+`./build/tool/can/qdrive_tool_can`
 
 ## 小指令
 
