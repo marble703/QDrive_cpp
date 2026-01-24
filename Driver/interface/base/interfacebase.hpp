@@ -3,6 +3,8 @@
 #include "can.hpp"
 #include "serial.hpp"
 
+#include <thread>
+
 #include "logger.hpp"
 
 namespace qdriver::interface {

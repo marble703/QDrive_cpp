@@ -1,5 +1,7 @@
 #include "can.hpp"
 
+#include <cstring>
+
 namespace qdriver::io {
 
 Can::Can(const std::string& ifname, std::shared_ptr<qdriver::logger::Logger> logger):

@@ -6,35 +6,38 @@ if(CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-add_library(qdrive_driver
+set(DRIVER_SOURCES
 	io/can/can.cpp
 	io/serial/serial.cpp
 	interface/base/interfacebase.cpp
 	interface/interface.cpp
 	motor/motor.cpp
-	logger/logger.cpp
 )
+
+# 添加 logger 源文件
+if(NOT LOGGER_DISABLED)
+	list(APPEND DRIVER_SOURCES logger/logger.cpp)
+endif()
+
+add_library(qdrive_driver ${DRIVER_SOURCES})
 
 add_library(QDrive::driver ALIAS qdrive_driver)
 
 target_include_directories(qdrive_driver
 	PUBLIC
-			${CMAKE_CURRENT_SOURCE_DIR}/io/can
-			${CMAKE_CURRENT_SOURCE_DIR}/io/serial
-			${CMAKE_CURRENT_SOURCE_DIR}/interface
-			${CMAKE_CURRENT_SOURCE_DIR}/motor
-			${CMAKE_CURRENT_SOURCE_DIR}/logger
-			${PROJECT_SOURCE_DIR}/third_party/spdlog/include
+		${CMAKE_CURRENT_SOURCE_DIR}/io/can
+		${CMAKE_CURRENT_SOURCE_DIR}/io/serial
+		${CMAKE_CURRENT_SOURCE_DIR}/interface
+		${CMAKE_CURRENT_SOURCE_DIR}/motor
+		${CMAKE_CURRENT_SOURCE_DIR}/logger
 )
 
-if(EXISTS "${PROJECT_SOURCE_DIR}/third_party/spdlog/CMakeLists.txt")
-    if(NOT TARGET spdlog::spdlog_header_only)
-        add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
-    endif()
-else()
-    message("Please try to init submodule")
+# 添加spdlog头文件路径
+if(NOT LOGGER_DISABLED)
+	target_include_directories(qdrive_driver
+		PUBLIC
+			${PROJECT_SOURCE_DIR}/third_party/spdlog/include
+	)
 endif()
-
-target_link_libraries(qdrive_driver PUBLIC spdlog::spdlog_header_only)
 
 target_compile_features(qdrive_driver PUBLIC cxx_std_17)

@@ -5,6 +5,7 @@
 本项目为[QDrive](https://github.com/Liu-Curiousity/QDrive-Software)上位机 cpp 开发工具
 
 正在开发中，欢迎提 issue 和 pr
+已完成基础功能开发
 
 ## 开发进度
 
@@ -31,19 +32,24 @@ Ubuntu 22.04
 g++ 11.4.0 
 boost 1.74
 
-Nyarch Linux
+Arch Linux
 
 ## 依赖
 
 本项目依赖:
 
-* [spdlog](https://github.com/gabime/spdlog) (MIT License)
+通信基础层：
 * [Boost](https://www.boost.org/) (BSL-1.0 License)
+
+日志模块：
+* [spdlog](https://github.com/gabime/spdlog) (MIT License)
+
+图形化界面：
 * [imgui](https://github.com/ocornut/imgui) (MIT License)
 
 ## 拉取和编译
 
-(如果需要调试界面)
+(如果需要调试界面可能需要手动安装 glfw3, arch linux 也是)
 
 `sudo apt install libglfw3-dev pkg-config`
 
@@ -52,6 +58,8 @@ Nyarch Linux
 ` cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j`
 
 可以设置 `WITHOUT_GUI=ON` 参数忽略调试界面及其 imgui 依赖
+可以设置 `WITHOUT_LOGGER=ON` 参数忽略日志模块及其 spdlog 依赖
+由于 example 依赖 logger 依赖，会同时忽略 example 部分
 
 ## 运行示例
 

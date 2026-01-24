@@ -1,8 +1,15 @@
 #pragma once
 
+#include <memory>
+
+#ifndef WITHOUT_LOGGER
 #include <spdlog/spdlog.h>
+#endif
 
 namespace qdriver::logger {
+
+#ifndef WITHOUT_LOGGER
+// 使用 spdlog 的完整实现
 
 /**
  * @brief 基于 spdlog 的 Logger 包装
@@ -113,5 +120,69 @@ public:
 private:
     static std::shared_ptr<Logger> defaultLogger_;
 };
+
+#else // WITHOUT_LOGGER
+
+/**
+ * @brief 空实现的 Logger（禁用日志时使用）
+ */
+class Logger {
+public:
+    Logger() = default;
+
+    template<typename... Args>
+    void trace(const char*, Args&&...) {}
+
+    template<typename... Args>
+    void debug(const char*, Args&&...) {}
+
+    template<typename... Args>
+    void info(const char*, Args&&...) {}
+
+    template<typename... Args>
+    void warn(const char*, Args&&...) {}
+
+    template<typename... Args>
+    void error(const char*, Args&&...) {}
+
+    template<typename... Args>
+    void critical(const char*, Args&&...) {}
+};
+
+/**
+ * @brief Logger 工厂类（禁用日志时的空实现）
+ */
+class LoggerFactory {
+public:
+    static std::shared_ptr<Logger> createConsoleLogger(
+        const std::string&,
+        int = 0
+    ) {
+        return std::make_shared<Logger>();
+    }
+
+    static std::shared_ptr<Logger> createFileLogger(
+        const std::string&,
+        const std::string&,
+        int = 0
+    ) {
+        return std::make_shared<Logger>();
+    }
+
+    static std::shared_ptr<Logger> createCombinedLogger(
+        const std::string&,
+        const std::string&,
+        int = 0
+    ) {
+        return std::make_shared<Logger>();
+    }
+
+    static std::shared_ptr<Logger> getDefaultLogger() {
+        static auto logger = std::make_shared<Logger>();
+        return logger;
+    }
+};
+
+#endif // WITHOUT_LOGGER
 
 } // namespace qdriver::logger
