@@ -99,7 +99,7 @@ int main(int, char**) {
     float angleKP = 0, angleKI = 0, angleKD = 0;
 
     float limitSpeed   = 1000.0f;
-    float limitCurrent = 10.0f;
+    float limitCurrent = 3.0f;
     int configCanId    = 0;
     int configBaud     = 115200;
 
@@ -164,9 +164,9 @@ int main(int, char**) {
         // Status view
         MotorState state = motor.getState();
         ImGui::Text("Status: %d", state.status);
-        ImGui::Text("Speed: %.2f rpm", state.speed);
-        ImGui::Text("Angle: %.2f rad", state.angle);
-        ImGui::Text("Current: %.2f A", state.current);
+        ImGui::Text("Speed: %.6f rpm", state.speed);
+        ImGui::Text("Angle: %.6f rad", state.angle);
+        ImGui::Text("Current: %.6f A", state.current);
 
         // Update history
         if (connected) {
@@ -362,18 +362,18 @@ int main(int, char**) {
             }
 
             ImGui::Text("Speed PID");
-            ImGui::InputFloat("S-KP", &speedKP);
-            ImGui::InputFloat("S-KI", &speedKI);
-            ImGui::InputFloat("S-KD", &speedKD);
+            ImGui::InputFloat("S-KP", &speedKP, 0.0f, 0.0f, "%.6f");
+            ImGui::InputFloat("S-KI", &speedKI, 0.0f, 0.0f, "%.6f");
+            ImGui::InputFloat("S-KD", &speedKD, 0.0f, 0.0f, "%.6f");
             if (ImGui::Button("Apply Speed PID")) {
                 motor.configSpeedPID(speedKP, speedKI, speedKD);
             }
 
             ImGui::Separator();
             ImGui::Text("Angle PID");
-            ImGui::InputFloat("A-KP", &angleKP);
-            ImGui::InputFloat("A-KI", &angleKI);
-            ImGui::InputFloat("A-KD", &angleKD);
+            ImGui::InputFloat("A-KP", &angleKP, 0.0f, 0.0f, "%.6f");
+            ImGui::InputFloat("A-KI", &angleKI, 0.0f, 0.0f, "%.6f");
+            ImGui::InputFloat("A-KD", &angleKD, 0.0f, 0.0f, "%.6f");
             if (ImGui::Button("Apply Angle PID")) {
                 motor.configAnglePID(angleKP, angleKI, angleKD);
             }
