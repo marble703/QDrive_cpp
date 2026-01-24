@@ -129,16 +129,23 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
     }
 
     logger_->info("[InterfaceBase] Starting reader thread");
-    this->readerThread_ = std::thread([this, readerFunction]() {
-        if (this->ioType_ == ioType::SERIAL) {
-            logger_->debug("[InterfaceBase] Reader thread started for SERIAL");
+    this->stopReaderThread_.store(false);
+    auto serialPortPtr = this->serialPortPtr_;
+    auto canBusPtr = this->canBusPtr_;
+    auto logger = this->logger_;
+    auto ioType = this->ioType_;
+    this->readerThread_ = std::thread([this, readerFunction, serialPortPtr, canBusPtr, logger, ioType]() {
+        if (ioType == ioType::SERIAL) {
+            logger->debug("[InterfaceBase] Reader thread started for SERIAL");
             // Todo: 检查缓冲区大小是否合理
             std::string buffer(32, '\0');
             while (true) {
                 if (this->stopReaderThread_.load())
                     break;
 
-                auto rc = serialPortPtr_->read(buffer, 32);
+                if (!serialPortPtr)
+                    break;
+                auto rc = serialPortPtr->read(buffer, 32);
                 if (!rc) {
                     continue;
                 }
@@ -149,18 +156,20 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
 
                 std::fill(buffer.begin(), buffer.end(), '\0');
             }
-            logger_->debug("[InterfaceBase] Reader thread stopped for SERIAL");
+            logger->debug("[InterfaceBase] Reader thread stopped for SERIAL");
         } // 当前会监听整个 CAN 总线的数据
-        else if (this->ioType_ == ioType::CAN)
+        else if (ioType == ioType::CAN)
         {
-            logger_->debug("[InterfaceBase] Reader thread started for CAN");
+            logger->debug("[InterfaceBase] Reader thread started for CAN");
             std::vector<uint8_t> data;
             auto canIdPtr = std::make_shared<size_t>();
             while (true) {
                 if (this->stopReaderThread_.load())
                     break;
 
-                if (this->canBusPtr_->receiveFrame(data, canIdPtr)) {
+                if (!canBusPtr)
+                    break;
+                if (canBusPtr->receiveFrame(data, canIdPtr)) {
                     std::string buffer;
                     buffer += std::to_string(*canIdPtr);
                     buffer += ":";
@@ -173,7 +182,7 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
                     readerFunction(buffer);
                 }
             }
-            logger_->debug("[InterfaceBase] Reader thread stopped for CAN");
+            logger->debug("[InterfaceBase] Reader thread stopped for CAN");
         }
     });
 
@@ -181,8 +190,6 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
         logger_->error("[InterfaceBase] Failed to create reader thread");
         return false; // 线程创建失败
     }
-    this->readerThread_.detach();
-
     return true;
 }
 
