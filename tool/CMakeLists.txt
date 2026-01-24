@@ -8,4 +8,8 @@ function(add_qdrive_tool_executable target_name source_file)
 endfunction()
 
 add_subdirectory(io)
+if (GUI_DISABLED)
+    message(STATUS "GUI build is disabled.")
+    return()
+endif()
 add_subdirectory(gui)
