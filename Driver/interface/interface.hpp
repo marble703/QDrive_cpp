@@ -212,19 +212,30 @@ public:
      * @pre 仅对串口接口有效
      */
     bool getConfig();
-
-private:
-    // 将电流 -10A ~ 10A 映射到 int16 的 -32768 ~ 32767
-    int16_t curentToCtrlValue(float current) const;
-
-    // 将速度 -1000rpm ~ 1000rpm 映射到 int16 的 -32768 ~ 32767
-    int16_t speedToCtrlValue(float speed) const;
-
-    // 将速度 0 ~ 2pi 映射到 int16 的 -32768 ~ 32767
-    int16_t angleToCtrlValue(float angle) const;
-
-    // 将速度 -5pi ~ 5pi 映射到 int16 的 -32768 ~ 32767
-    int16_t stepAngleToCtrlValue(float angle) const;
 };
+
+// 将电流 -10A ~ 10A 映射到 int16 的 -32768 ~ 32767
+int16_t curentToCtrlValue(float current);
+
+// 将速度 -1000rpm ~ 1000rpm 映射到 int16 的 -32768 ~ 32767
+int16_t speedToCtrlValue(float speed);
+
+// 将速度 0 ~ 2pi 映射到 int16 的 -32768 ~ 32767
+int16_t angleToCtrlValue(float angle);
+
+// 将速度 -5pi ~ 5pi 映射到 int16 的 -32768 ~ 32767
+int16_t stepAngleToCtrlValue(float angle);
+
+// 将 int16 控制值 (-32768 ~ 32767) 转回电流，单位 A
+float ctrlValueToCurrent(int16_t ctrlValue);
+
+// 将 int16 控制值 (-32768 ~ 32767) 转回速度，单位 rpm
+float ctrlValueToSpeed(int16_t ctrlValue);
+
+// 将 int16 控制值 (-32768 ~ 32767) 转回角度，单位 rad
+float ctrlValueToAngle(int16_t ctrlValue);
+
+// 将 int16 控制值 (-32768 ~ 32767) 转回步进角度，单位 rad
+float ctrlValueToStepAngle(int16_t ctrlValue);
 
 } // namespace qdriver::interface

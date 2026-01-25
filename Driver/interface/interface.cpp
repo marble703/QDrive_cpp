@@ -85,7 +85,7 @@ bool Interface::ctrlCurrent(float current, uint32_t canID) {
     logger_->debug("[Interface] Controlling current: {} A", current);
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id = canID, .ctrlCommand = 0x03, .ctrlValue = this->curentToCtrlValue(current) }
+            { .id = canID, .ctrlCommand = 0x03, .ctrlValue = curentToCtrlValue(current) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -100,7 +100,7 @@ bool Interface::ctrlSpeed(float speed, uint32_t canID) {
     logger_->debug("[Interface] Controlling speed: {} rpm", speed);
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id = canID, .ctrlCommand = 0x04, .ctrlValue = this->speedToCtrlValue(speed) }
+            { .id = canID, .ctrlCommand = 0x04, .ctrlValue = speedToCtrlValue(speed) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -114,7 +114,7 @@ bool Interface::ctrlSpeed(float speed, uint32_t canID) {
 bool Interface::ctrlAngle(float angle, uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id = canID, .ctrlCommand = 0x05, .ctrlValue = this->angleToCtrlValue(angle) }
+            { .id = canID, .ctrlCommand = 0x05, .ctrlValue = angleToCtrlValue(angle) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -128,7 +128,7 @@ bool Interface::ctrlAngle(float angle, uint32_t canID) {
 bool Interface::ctrlLowSpeed(float speed, uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id = canID, .ctrlCommand = 0x06, .ctrlValue = this->speedToCtrlValue(speed) }
+            { .id = canID, .ctrlCommand = 0x06, .ctrlValue = speedToCtrlValue(speed) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -142,7 +142,7 @@ bool Interface::ctrlLowSpeed(float speed, uint32_t canID) {
 bool Interface::ctrlStepAngle(float angle, uint32_t canID) {
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
-            { .id = canID, .ctrlCommand = 0x05, .ctrlValue = this->speedToCtrlValue(angle) }
+            { .id = canID, .ctrlCommand = 0x05, .ctrlValue = speedToCtrlValue(angle) }
         );
 
     } else if (this->getIoType() == ioType::SERIAL) {
@@ -262,7 +262,7 @@ bool Interface::getConfig() {
     );
 }
 
-int16_t Interface::curentToCtrlValue(float current) const {
+int16_t curentToCtrlValue(float current)  {
     float scaled = (std::clamp(current, MIN_CURRENT_CTRL_VALUE, MAX_CURRENT_CTRL_VALUE)
                     - MIN_CURRENT_CTRL_VALUE)
             / (MAX_CURRENT_CTRL_VALUE - MIN_CURRENT_CTRL_VALUE) * 65535.0f
@@ -270,7 +270,7 @@ int16_t Interface::curentToCtrlValue(float current) const {
     return boost::numeric_cast<int16_t>(scaled);
 }
 
-int16_t Interface::speedToCtrlValue(float speed) const {
+int16_t speedToCtrlValue(float speed)  {
     float scaled =
         (std::clamp(speed, MIN_SPEED_CTRL_VALUE, MAX_SPEED_CTRL_VALUE) - MIN_SPEED_CTRL_VALUE)
             / (MAX_SPEED_CTRL_VALUE - MIN_SPEED_CTRL_VALUE) * 65535.0f
@@ -278,7 +278,7 @@ int16_t Interface::speedToCtrlValue(float speed) const {
     return boost::numeric_cast<int16_t>(scaled);
 }
 
-int16_t Interface::angleToCtrlValue(float angle) const {
+int16_t angleToCtrlValue(float angle)  {
     float scaled =
         (std::clamp(angle, MIN_ANGLE_CTRL_VALUE, MAX_ANGLE_CTRL_VALUE) - MIN_ANGLE_CTRL_VALUE)
             / (MAX_ANGLE_CTRL_VALUE - MIN_ANGLE_CTRL_VALUE) * 65535.0f
@@ -286,12 +286,36 @@ int16_t Interface::angleToCtrlValue(float angle) const {
     return boost::numeric_cast<int16_t>(scaled);
 }
 
-int16_t Interface::stepAngleToCtrlValue(float angle) const {
+int16_t stepAngleToCtrlValue(float angle)  {
     float scaled = (std::clamp(angle, MIN_STEPANGLE_CTRL_VALUE, MAX_STEPANGLE_CTRL_VALUE)
                     - MIN_STEPANGLE_CTRL_VALUE)
             / (MAX_STEPANGLE_CTRL_VALUE - MIN_STEPANGLE_CTRL_VALUE) * 65535.0f
         - 32768.0f;
     return boost::numeric_cast<int16_t>(scaled);
+}
+
+float ctrlValueToCurrent(int16_t ctrlValue) {
+    int32_t v = std::clamp<int32_t>(static_cast<int32_t>(ctrlValue), -32768, 32767);
+    float scaled = (static_cast<float>(v) + 32768.0f) / 65535.0f;
+    return scaled * (MAX_CURRENT_CTRL_VALUE - MIN_CURRENT_CTRL_VALUE) + MIN_CURRENT_CTRL_VALUE;
+}
+
+float ctrlValueToSpeed(int16_t ctrlValue) {
+    int32_t v = std::clamp<int32_t>(static_cast<int32_t>(ctrlValue), -32768, 32767);
+    float scaled = (static_cast<float>(v) + 32768.0f) / 65535.0f;
+    return scaled * (MAX_SPEED_CTRL_VALUE - MIN_SPEED_CTRL_VALUE) + MIN_SPEED_CTRL_VALUE;
+}
+
+float ctrlValueToAngle(int16_t ctrlValue) {
+    int32_t v = std::clamp<int32_t>(static_cast<int32_t>(ctrlValue), -32768, 32767);
+    float scaled = (static_cast<float>(v) + 32768.0f) / 65535.0f;
+    return scaled * (MAX_ANGLE_CTRL_VALUE - MIN_ANGLE_CTRL_VALUE) + MIN_ANGLE_CTRL_VALUE;
+}
+
+float ctrlValueToStepAngle(int16_t ctrlValue) {
+    int32_t v = std::clamp<int32_t>(static_cast<int32_t>(ctrlValue), -32768, 32767);
+    float scaled = (static_cast<float>(v) + 32768.0f) / 65535.0f;
+    return scaled * (MAX_STEPANGLE_CTRL_VALUE - MIN_STEPANGLE_CTRL_VALUE) + MIN_STEPANGLE_CTRL_VALUE;
 }
 
 } // namespace qdriver::interface
