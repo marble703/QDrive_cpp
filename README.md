@@ -5,23 +5,14 @@
 本项目为[QDrive](https://github.com/Liu-Curiousity/QDrive-Software)上位机 cpp 开发工具
 
 正在开发中，欢迎提 issue 和 pr
-已完成基础功能开发
-
-## 开发进度
-
-- [x] 串口通信
-- [x] can 通信
-- [x] 接口
-- [x] 日志
-- [x] 调试工具
 
 ## 代码结构
 
-Driver(驱动部分)
--> io(通信功能封装)
--> interfacebase(基础通信协议封装)
--> interface(高级通信协议封装)
--> motor(电机功能封装)
+Driver(驱动部分) 
+-> io(通信功能封装) 
+-> interfacebase(基础通信协议封装) 
+-> interface(高级通信协议封装) 
+-> motor(电机功能封装) 
 logger(日志功能封装)
 
 ## 开发环境
@@ -102,11 +93,11 @@ chmod +x create-udev-rule.sh
 
 串口调试工具
 
-`./build/tool/serial/qdrive_tool_serial`
+`./build/tool/io/qdrive_tool_serial`
 
 CAN调试工具
 
-`./build/tool/can/qdrive_tool_can`
+`./build/tool/io/qdrive_tool_can`
 
 ## 小指令
 
