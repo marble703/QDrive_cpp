@@ -288,6 +288,53 @@ bool Motor::startReaderThread(ioType ioType, std::function<void(std::string&)> r
     return false;
 }
 
+bool Motor::startReaderThread(std::function<void(CanMessage&)> readerFunction) {
+    if (this->getInterface(ioType::CAN)) {
+        return this->getInterface(ioType::CAN)
+            ->startReaderThread([readerFunction](const std::string& msg) {
+                try {
+                    size_t colonPos = msg.find(':');
+                    if (colonPos == std::string::npos)
+                        return;
+
+                    std::string idStr   = msg.substr(0, colonPos);
+                    std::string dataStr = msg.substr(colonPos + 1);
+
+                    uint32_t id = 0;
+                    try {
+                        id = std::stoul(idStr);
+                    } catch (...) {
+                        return;
+                    }
+
+                    std::vector<uint8_t> data;
+                    for (size_t i = 0; i + 1 < dataStr.size(); i += 2) {
+                        std::string byteString = dataStr.substr(i, 2);
+                        try {
+                            unsigned int val = std::stoul(byteString, nullptr, 16);
+                            data.push_back(static_cast<uint8_t>(val));
+                        } catch (...) {
+                            return;
+                        }
+                    }
+
+                    if (data.size() < 8)
+                        return;
+
+                    CanMessage canMsg;
+                    canMsg.canID   = id;
+                    canMsg.status  = static_cast<MotorStatus>(data[0]);
+                    canMsg.current = qdriver::interface::ctrlValueToCurrent((int16_t)(data[2] | (data[3] << 8)));
+                    canMsg.speed   = qdriver::interface::ctrlValueToSpeed((int16_t)(data[4] | (data[5] << 8)));
+                    canMsg.angle   = qdriver::interface::ctrlValueToAngle((int16_t)(data[6] | (data[7] << 8)));
+
+                    readerFunction(canMsg);
+                } catch (...) {}
+            });
+    }
+    return false;
+}
+
 bool Motor::ReleaseReaderThread(ioType ioType) {
     if (this->getInterface(ioType)) {
         return this->getInterface(ioType)->ReleaseReaderThread();

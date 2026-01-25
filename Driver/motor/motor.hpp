@@ -8,6 +8,24 @@ namespace qdriver::motor {
 using qdriver::interface::ioType;
 using qdriver::interface::PIDtype;
 
+enum class MotorStatus {
+    NOP            = 0,
+    ENABLE         = 1,
+    DISABLE        = 2,
+    CURRENT_CTRL   = 3,
+    SPEED_CTRL     = 4,
+    ANGLE_CTRL     = 5,
+    LOW_SPEED_CTRL = 6,
+};
+
+struct CanMessage {
+    uint32_t canID;
+    MotorStatus status;
+    float current;
+    float speed;
+    float angle;
+};
+
 class Motor {
 public:
     Motor(
@@ -208,6 +226,12 @@ public:
      * @brief 获取读取线程
      */
     bool startReaderThread(ioType ioType, std::function<void(std::string&)> readerFunction);
+
+    /**
+    * @brief 获取解码后的读取线程
+    * @note 仅对 CAN 接口有效
+    */
+    bool startReaderThread(std::function<void(CanMessage&)> readerFunction);
 
     bool ReleaseReaderThread(ioType ioType);
 
