@@ -97,7 +97,7 @@ bool Interface::ctrlCurrent(float current, uint32_t canID) {
 }
 
 bool Interface::ctrlSpeed(float speed, uint32_t canID) {
-    logger_->debug("[Interface] Controlling speed: {} rad/s", speed);
+    logger_->debug("[Interface] Controlling speed: {} rpm", speed);
     if (this->getIoType() == ioType::CAN) {
         return this->sendCommand(
             { .id = canID, .ctrlCommand = 0x04, .ctrlValue = this->speedToCtrlValue(speed) }

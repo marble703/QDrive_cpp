@@ -127,7 +127,7 @@ bool Motor::ctrlCurrent(float current, ioType ioType) {
 }
 
 bool Motor::ctrlSpeed(float speed, ioType ioType) {
-    logger_->debug("[Motor] Motor '{}' controlling speed: {} rad/s", name_, speed);
+    logger_->debug("[Motor] Motor '{}' controlling speed: {} rpm", name_, speed);
     if (ioType == ioType::NONE && this->getInterface(ioType::SERIAL) || ioType == ioType::SERIAL) {
         return this->getInterface(ioType::SERIAL)->ctrlSpeed(speed);
     } else if (ioType == ioType::NONE && this->getInterface(ioType::CAN) || ioType == ioType::CAN) {

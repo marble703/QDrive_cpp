@@ -18,8 +18,8 @@
 ## 代码结构
 
 Driver(驱动部分)
--> io(通信功能封装) 
--> interfacebase(基础通信协议封装) 
+-> io(通信功能封装)
+-> interfacebase(基础通信协议封装)
 -> interface(高级通信协议封装)
 -> motor(电机功能封装)
 logger(日志功能封装)
