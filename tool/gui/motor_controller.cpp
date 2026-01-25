@@ -1,5 +1,6 @@
 #include "motor_controller.hpp"
-#include <chrono>
+#include <iostream>
+#include <regex>
 
 MotorController::MotorController() {
     logger_ = std::make_shared<qdriver::logger::Logger>();
@@ -13,26 +14,20 @@ bool MotorController::init(const std::string& serialDev, const std::string& canI
     stop();
 
     try {
-        auto ioContextSerial = qdriver::io::IOContextPtrSelector(
-            std::make_unique<boost::asio::io_context>()
-        );
-        auto serialPort = std::make_shared<qdriver::io::Serial>(
-            std::move(ioContextSerial),
-            serialDev,
-            115200
-        );
+        auto ioContextSerial =
+            qdriver::io::IOContextPtrSelector(std::make_unique<boost::asio::io_context>());
+        auto serialPort =
+            std::make_shared<qdriver::io::Serial>(std::move(ioContextSerial), serialDev, 115200);
         interfaceSerial_ = std::make_shared<qdriver::interface::Interface>(serialPort, logger_);
 
-        interfaceSerial_->startReaderThread(
-            [this](std::string& msg) { this->parseSerialMessage(msg); }
-        );
+        interfaceSerial_->startReaderThread([this](std::string& msg) {
+            this->parseSerialMessage(msg);
+        });
 
         auto canPort  = std::make_shared<qdriver::io::Can>(canIf, logger_);
         interfaceCan_ = std::make_shared<qdriver::interface::Interface>(canPort, logger_);
 
-        interfaceCan_->startReaderThread(
-            [this](std::string& msg) { this->parseCanMessage(msg); }
-        );
+        interfaceCan_->startReaderThread([this](std::string& msg) { this->parseCanMessage(msg); });
 
         running_       = true;
         controlThread_ = std::thread(&MotorController::controlLoop, this);
@@ -58,16 +53,14 @@ void MotorController::stop() {
     if (interfaceCan_) {
         try {
             interfaceCan_->ReleaseReaderThread();
-        } catch (...) {
-        }
+        } catch (...) {}
         interfaceCan_.reset();
     }
 
     if (interfaceSerial_) {
         try {
             interfaceSerial_->ReleaseReaderThread();
-        } catch (...) {
-        }
+        } catch (...) {}
         interfaceSerial_.reset();
     }
 
@@ -195,7 +188,7 @@ void MotorController::setCanIds(uint32_t send, uint32_t recv) {
 void MotorController::parseSerialMessage(std::string& msg) {
     std::string sanitized;
     sanitized.reserve(msg.size());
-    for (unsigned char c : msg) {
+    for (unsigned char c: msg) {
         if (c == '\0')
             continue;
         if (c == '\n' || c == '\r' || c == '\t' || c == ' ') {
@@ -342,8 +335,7 @@ void MotorController::parseCanMessage(std::string& msg) {
             std::lock_guard<std::mutex> lock(stateMutex_);
             currentState_ = newState;
         }
-    } catch (...) {
-    }
+    } catch (...) {}
 }
 
 void MotorController::controlLoop() {
@@ -373,9 +365,8 @@ void MotorController::controlLoop() {
             }
         }
 
-        auto end = std::chrono::steady_clock::now();
-        auto elapsed =
-            std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        auto end     = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         if (elapsed < 1000) {
             std::this_thread::sleep_for(std::chrono::microseconds(1000 - elapsed));
         }

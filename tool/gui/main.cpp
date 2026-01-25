@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -20,9 +19,10 @@ static void PlotLinesWithGrid(
     int values_count,
     float scale_min,
     float scale_max,
-    ImVec2 size = ImVec2(0, 80),
-    int grid_x  = 10,
-    int grid_y  = 5
+    ImVec2 size        = ImVec2(0, 80),
+    int grid_x         = 10,
+    int grid_y         = 5,
+    float target_value = NAN // Optional target value to draw as reference line
 ) {
     if (values_count <= 0)
         return;
@@ -45,6 +45,21 @@ static void PlotLinesWithGrid(
     }
 
     ImGui::PlotLines(label, values, values_count, 0, NULL, scale_min, scale_max, size);
+
+    // Draw target reference line if provided and within range
+    if (!std::isnan(target_value) && target_value >= scale_min && target_value <= scale_max) {
+        float t         = (target_value - scale_min) / (scale_max - scale_min);
+        float target_y  = pos.y + size.y * (1.0f - t);
+        ImU32 targetCol = ImGui::GetColorU32(ImVec4(1.0f, 0.2f, 0.2f, 0.8f)); // Red
+
+        // Draw dashed line
+        float dash_length = 8.0f;
+        float gap_length  = 4.0f;
+        for (float x = pos.x; x < br.x; x += dash_length + gap_length) {
+            float x_end = std::min(x + dash_length, br.x);
+            dl->AddLine(ImVec2(x, target_y), ImVec2(x_end, target_y), targetCol, 2.0f);
+        }
+    }
 }
 
 int main(int, char**) {
@@ -109,8 +124,8 @@ int main(int, char**) {
     float displayMinCurrent = appCfg.displayMinCurrent;
     float displayMaxCurrent = appCfg.displayMaxCurrent;
 
-    int configCanId    = 0;
-    int configBaud     = 115200;
+    int configCanId = 0;
+    int configBaud  = 115200;
 
     // Plotting buffers
     std::vector<float> speedHistory(1000, 0);
@@ -193,7 +208,10 @@ int main(int, char**) {
             speedHistory.size(),
             displayMinSpeed,
             displayMaxSpeed,
-            ImVec2(0, 160)
+            ImVec2(0, 160),
+            10,
+            5,
+            controlMode == 1 ? targetSpeed : NAN // Show target in speed control mode
         );
         PlotLinesWithGrid(
             "Angle (rad)",
@@ -201,7 +219,10 @@ int main(int, char**) {
             angleHistory.size(),
             displayMinAngle,
             displayMaxAngle,
-            ImVec2(0, 160)
+            ImVec2(0, 160),
+            10,
+            5,
+            controlMode == 2 ? targetAngle : NAN // Show target in angle control mode
         );
         PlotLinesWithGrid(
             "Current (A)",
@@ -209,7 +230,10 @@ int main(int, char**) {
             currentHistory.size(),
             displayMinCurrent,
             displayMaxCurrent,
-            ImVec2(0, 160)
+            ImVec2(0, 160),
+            10,
+            5,
+            controlMode == 3 ? targetCurrent : NAN // Show target in current control mode
         );
 
         ImGui::Separator();
@@ -425,9 +449,12 @@ int main(int, char**) {
             ImGui::InputFloat("Display Max Current", &displayMaxCurrent);
 
             // Simple guards to keep display ranges valid
-            if (displayMinSpeed >= displayMaxSpeed) displayMaxSpeed = displayMinSpeed + 1e-3f;
-            if (displayMinAngle >= displayMaxAngle) displayMaxAngle = displayMinAngle + 1e-6f;
-            if (displayMinCurrent >= displayMaxCurrent) displayMaxCurrent = displayMinCurrent + 1e-3f;
+            if (displayMinSpeed >= displayMaxSpeed)
+                displayMaxSpeed = displayMinSpeed + 1e-3f;
+            if (displayMinAngle >= displayMaxAngle)
+                displayMaxAngle = displayMinAngle + 1e-6f;
+            if (displayMinCurrent >= displayMaxCurrent)
+                displayMaxCurrent = displayMinCurrent + 1e-3f;
 
             if (ImGui::Button("Save Display Ranges")) {
                 appCfg.displayMinSpeed   = displayMinSpeed;

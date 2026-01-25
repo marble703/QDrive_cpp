@@ -1,7 +1,7 @@
 #pragma once
 
 #include <fstream>
-#include <string>
+
 #include "motor_controller.hpp"
 
 struct AppConfig {
@@ -42,19 +42,30 @@ inline AppConfig loadConfig(const std::string& filename = "qdrive_gui.conf") {
         std::string line;
         while (std::getline(f, line)) {
             auto pos = line.find('=');
-            if (pos == std::string::npos) continue;
+            if (pos == std::string::npos)
+                continue;
             std::string key = line.substr(0, pos);
             std::string val = line.substr(pos + 1);
-            if (key == "serial_port") cfg.serialPort = val;
-            else if (key == "can_interface") cfg.canInterface = val;
-            else if (key == "send_id") cfg.sendIdHex = std::stoi(val, nullptr, 16);
-            else if (key == "recv_id") cfg.recvIdHex = std::stoi(val, nullptr, 16);
-            else if (key == "display_min_speed") cfg.displayMinSpeed = std::stof(val);
-            else if (key == "display_max_speed") cfg.displayMaxSpeed = std::stof(val);
-            else if (key == "display_min_angle") cfg.displayMinAngle = std::stof(val);
-            else if (key == "display_max_angle") cfg.displayMaxAngle = std::stof(val);
-            else if (key == "display_min_current") cfg.displayMinCurrent = std::stof(val);
-            else if (key == "display_max_current") cfg.displayMaxCurrent = std::stof(val);
+            if (key == "serial_port")
+                cfg.serialPort = val;
+            else if (key == "can_interface")
+                cfg.canInterface = val;
+            else if (key == "send_id")
+                cfg.sendIdHex = std::stoi(val, nullptr, 16);
+            else if (key == "recv_id")
+                cfg.recvIdHex = std::stoi(val, nullptr, 16);
+            else if (key == "display_min_speed")
+                cfg.displayMinSpeed = std::stof(val);
+            else if (key == "display_max_speed")
+                cfg.displayMaxSpeed = std::stof(val);
+            else if (key == "display_min_angle")
+                cfg.displayMinAngle = std::stof(val);
+            else if (key == "display_max_angle")
+                cfg.displayMaxAngle = std::stof(val);
+            else if (key == "display_min_current")
+                cfg.displayMinCurrent = std::stof(val);
+            else if (key == "display_max_current")
+                cfg.displayMaxCurrent = std::stof(val);
         }
     }
     return cfg;

@@ -1,16 +1,5 @@
 #pragma once
 
-#include <algorithm>
-#include <atomic>
-#include <cctype>
-#include <iostream>
-#include <memory>
-#include <mutex>
-#include <regex>
-#include <string>
-#include <thread>
-#include <vector>
-
 #include "interface/interface.hpp"
 #include "logger.hpp"
 
@@ -136,7 +125,7 @@ private:
     MotorState currentState_;
 
     std::thread controlThread_;
-    std::atomic<bool> running_{false};
+    std::atomic<bool> running_ { false };
 
     // Command management
     std::mutex cmdMutex_;
