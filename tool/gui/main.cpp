@@ -100,13 +100,22 @@ int main(int, char**) {
 
     float limitSpeed   = 1000.0f;
     float limitCurrent = 3.0f;
+
+    // Display-only ranges (do NOT affect control calculations). Initialize from persisted config
+    float displayMinSpeed   = appCfg.displayMinSpeed;
+    float displayMaxSpeed   = appCfg.displayMaxSpeed;
+    float displayMinAngle   = appCfg.displayMinAngle;
+    float displayMaxAngle   = appCfg.displayMaxAngle;
+    float displayMinCurrent = appCfg.displayMinCurrent;
+    float displayMaxCurrent = appCfg.displayMaxCurrent;
+
     int configCanId    = 0;
     int configBaud     = 115200;
 
     // Plotting buffers
-    std::vector<float> speedHistory(200, 0);
-    std::vector<float> angleHistory(200, 0);
-    std::vector<float> currentHistory(200, 0);
+    std::vector<float> speedHistory(1000, 0);
+    std::vector<float> angleHistory(1000, 0);
+    std::vector<float> currentHistory(1000, 0);
     size_t plotIdx = 0;
 
     while (!glfwWindowShouldClose(window)) {
@@ -182,24 +191,24 @@ int main(int, char**) {
             "Speed (rpm)",
             speedHistory.data(),
             speedHistory.size(),
-            MIN_SPEED_CTRL_VALUE,
-            MAX_SPEED_CTRL_VALUE,
+            displayMinSpeed,
+            displayMaxSpeed,
             ImVec2(0, 160)
         );
         PlotLinesWithGrid(
             "Angle (rad)",
             angleHistory.data(),
             angleHistory.size(),
-            MIN_ANGLE_CTRL_VALUE,
-            MAX_ANGLE_CTRL_VALUE,
+            displayMinAngle,
+            displayMaxAngle,
             ImVec2(0, 160)
         );
         PlotLinesWithGrid(
             "Current (A)",
             currentHistory.data(),
             currentHistory.size(),
-            MIN_CURRENT_CTRL_VALUE,
-            MAX_CURRENT_CTRL_VALUE,
+            displayMinCurrent,
+            displayMaxCurrent,
             ImVec2(0, 160)
         );
 
@@ -228,8 +237,8 @@ int main(int, char**) {
                 bool sliderChanged = ImGui::SliderFloat(
                     "Target Speed",
                     &targetSpeed,
-                    MIN_SPEED_CTRL_VALUE,
-                    MAX_SPEED_CTRL_VALUE
+                    displayMinSpeed,
+                    displayMaxSpeed
                 );
                 ImGui::SameLine();
                 bool inputChanged =
@@ -245,8 +254,8 @@ int main(int, char**) {
                 bool sliderChanged = ImGui::SliderFloat(
                     "Target Angle",
                     &targetAngle,
-                    MIN_ANGLE_CTRL_VALUE,
-                    MAX_ANGLE_CTRL_VALUE
+                    displayMinAngle,
+                    displayMaxAngle
                 );
                 ImGui::SameLine();
                 bool inputChanged =
@@ -262,8 +271,8 @@ int main(int, char**) {
                 bool sliderChanged = ImGui::SliderFloat(
                     "Target Current",
                     &targetCurrent,
-                    MIN_CURRENT_CTRL_VALUE,
-                    MAX_CURRENT_CTRL_VALUE
+                    displayMinCurrent,
+                    displayMaxCurrent
                 );
                 ImGui::SameLine();
                 bool inputChanged =
@@ -388,6 +397,9 @@ int main(int, char**) {
             if (ImGui::Button("Set Current Limit"))
                 motor.configLimitCurrent(limitCurrent);
 
+            // Display ranges moved to their own collapsing header below
+            ImGui::Separator();
+
             ImGui::InputInt("New CAN ID", &configCanId);
             if (ImGui::Button("Set CAN ID (0-8)"))
                 motor.configCanID((uint32_t)configCanId);
@@ -395,13 +407,39 @@ int main(int, char**) {
             ImGui::InputInt("Baud Rate", &configBaud);
             if (ImGui::Button("Set Baud Rate"))
                 motor.configBaudRate((uint32_t)configBaud);
+
+            ImGui::Separator();
+            if (ImGui::Button("Store Config"))
+                motor.store();
+            ImGui::SameLine();
+            if (ImGui::Button("Restore Config"))
+                motor.restore();
         }
 
-        if (ImGui::Button("Store Config"))
-            motor.store();
-        ImGui::SameLine();
-        if (ImGui::Button("Restore Config"))
-            motor.restore();
+        if (ImGui::CollapsingHeader("Display Ranges")) {
+            ImGui::InputFloat("Display Min Speed", &displayMinSpeed);
+            ImGui::InputFloat("Display Max Speed", &displayMaxSpeed);
+            ImGui::InputFloat("Display Min Angle", &displayMinAngle);
+            ImGui::InputFloat("Display Max Angle", &displayMaxAngle);
+            ImGui::InputFloat("Display Min Current", &displayMinCurrent);
+            ImGui::InputFloat("Display Max Current", &displayMaxCurrent);
+
+            // Simple guards to keep display ranges valid
+            if (displayMinSpeed >= displayMaxSpeed) displayMaxSpeed = displayMinSpeed + 1e-3f;
+            if (displayMinAngle >= displayMaxAngle) displayMaxAngle = displayMinAngle + 1e-6f;
+            if (displayMinCurrent >= displayMaxCurrent) displayMaxCurrent = displayMinCurrent + 1e-3f;
+
+            if (ImGui::Button("Save Display Ranges")) {
+                appCfg.displayMinSpeed   = displayMinSpeed;
+                appCfg.displayMaxSpeed   = displayMaxSpeed;
+                appCfg.displayMinAngle   = displayMinAngle;
+                appCfg.displayMaxAngle   = displayMaxAngle;
+                appCfg.displayMinCurrent = displayMinCurrent;
+                appCfg.displayMaxCurrent = displayMaxCurrent;
+                saveConfig(appCfg);
+                std::cout << "[Config] Saved display ranges to qdrive_gui.conf" << std::endl;
+            }
+        }
 
         ImGui::End();
 
