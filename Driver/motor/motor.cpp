@@ -326,7 +326,7 @@ bool Motor::startReaderThread(std::function<void(CanMessage&)> readerFunction) {
                     canMsg.status  = static_cast<MotorStatus>(data[0]);
                     canMsg.current = qdriver::interface::ctrlValueToCurrent((int16_t)(data[2] | (data[3] << 8)));
                     canMsg.speed   = qdriver::interface::ctrlValueToSpeed((int16_t)(data[4] | (data[5] << 8)));
-                    canMsg.angle   = qdriver::interface::ctrlValueToAngle((int16_t)(data[6] | (data[7] << 8)));
+                    canMsg.angle   = qdriver::interface::ctrlValueToAngle((uint16_t)(data[6] | (data[7] << 8)));
 
                     readerFunction(canMsg);
                 } catch (...) {}

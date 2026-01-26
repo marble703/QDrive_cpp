@@ -62,9 +62,8 @@ inline float ctrlValueToSpeed(int16_t val) {
         + MIN_SPEED_CTRL_VALUE;
 }
 
-inline float ctrlValueToAngle(int16_t val) {
-    return (static_cast<float>(val) + 32768.0f) / 65535.0f
-        * (MAX_ANGLE_CTRL_VALUE - MIN_ANGLE_CTRL_VALUE)
+inline float ctrlValueToAngle(uint16_t val) {
+    return (static_cast<float>(val)) / 65535.0f * (MAX_ANGLE_CTRL_VALUE - MIN_ANGLE_CTRL_VALUE)
         + MIN_ANGLE_CTRL_VALUE;
 }
 

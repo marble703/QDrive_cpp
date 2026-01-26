@@ -323,7 +323,7 @@ void MotorController::parseCanMessage(std::string& msg) {
 
         int16_t rawCurrent = (int16_t)(data[2] | (data[3] << 8));
         int16_t rawSpeed   = (int16_t)(data[4] | (data[5] << 8));
-        int16_t rawAngle   = (int16_t)(data[6] | (data[7] << 8));
+        uint16_t rawAngle   = (uint16_t)(data[6] | (data[7] << 8));
 
         MotorState newState;
         newState.status  = data[0];

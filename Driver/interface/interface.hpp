@@ -232,8 +232,8 @@ float ctrlValueToCurrent(int16_t ctrlValue);
 // 将 int16 控制值 (-32768 ~ 32767) 转回速度，单位 rpm
 float ctrlValueToSpeed(int16_t ctrlValue);
 
-// 将 int16 控制值 (-32768 ~ 32767) 转回角度，单位 rad
-float ctrlValueToAngle(int16_t ctrlValue);
+// 将 uint16 控制值 (0 ~ 65535) 转回角度，单位 rad
+float ctrlValueToAngle(uint16_t ctrlValue);
 
 // 将 int16 控制值 (-32768 ~ 32767) 转回步进角度，单位 rad
 float ctrlValueToStepAngle(int16_t ctrlValue);

@@ -4,14 +4,16 @@ namespace qdriver::interface {
 Interface::Interface(
     std::shared_ptr<qdriver::io::Serial> serialPort,
     std::shared_ptr<qdriver::logger::Logger> logger
-): InterfaceBase(serialPort, logger) {
+):
+    InterfaceBase(serialPort, logger) {
     logger_->info("[Interface] Created with SERIAL interface");
 }
 
 Interface::Interface(
     std::shared_ptr<qdriver::io::Can> canPort,
     std::shared_ptr<qdriver::logger::Logger> logger
-): InterfaceBase(canPort, 0x400, 0x500, logger) {
+):
+    InterfaceBase(canPort, 0x400, 0x500, logger) {
     logger_->info("[Interface] Created with CAN interface");
 }
 
@@ -257,12 +259,10 @@ bool Interface::getConfig() {
     if (this->getIoType() == ioType::CAN) {
         throw std::runtime_error("ConfigBaudRate command is not supported for CAN interface");
     }
-    return this->sendCommand(
-        { .cmd = "config", .parameter = " --list", .value = "" }
-    );
+    return this->sendCommand({ .cmd = "config", .parameter = " --list", .value = "" });
 }
 
-int16_t curentToCtrlValue(float current)  {
+int16_t curentToCtrlValue(float current) {
     float scaled = (std::clamp(current, MIN_CURRENT_CTRL_VALUE, MAX_CURRENT_CTRL_VALUE)
                     - MIN_CURRENT_CTRL_VALUE)
             / (MAX_CURRENT_CTRL_VALUE - MIN_CURRENT_CTRL_VALUE) * 65535.0f
@@ -270,7 +270,7 @@ int16_t curentToCtrlValue(float current)  {
     return boost::numeric_cast<int16_t>(scaled);
 }
 
-int16_t speedToCtrlValue(float speed)  {
+int16_t speedToCtrlValue(float speed) {
     float scaled =
         (std::clamp(speed, MIN_SPEED_CTRL_VALUE, MAX_SPEED_CTRL_VALUE) - MIN_SPEED_CTRL_VALUE)
             / (MAX_SPEED_CTRL_VALUE - MIN_SPEED_CTRL_VALUE) * 65535.0f
@@ -278,15 +278,14 @@ int16_t speedToCtrlValue(float speed)  {
     return boost::numeric_cast<int16_t>(scaled);
 }
 
-int16_t angleToCtrlValue(float angle)  {
+int16_t angleToCtrlValue(float angle) {
     float scaled =
         (std::clamp(angle, MIN_ANGLE_CTRL_VALUE, MAX_ANGLE_CTRL_VALUE) - MIN_ANGLE_CTRL_VALUE)
-            / (MAX_ANGLE_CTRL_VALUE - MIN_ANGLE_CTRL_VALUE) * 65535.0f
-        - 32768.0f;
-    return boost::numeric_cast<int16_t>(scaled);
+        / (MAX_ANGLE_CTRL_VALUE - MIN_ANGLE_CTRL_VALUE) * 65535.0f;
+    return static_cast<uint16_t>(scaled);
 }
 
-int16_t stepAngleToCtrlValue(float angle)  {
+int16_t stepAngleToCtrlValue(float angle) {
     float scaled = (std::clamp(angle, MIN_STEPANGLE_CTRL_VALUE, MAX_STEPANGLE_CTRL_VALUE)
                     - MIN_STEPANGLE_CTRL_VALUE)
             / (MAX_STEPANGLE_CTRL_VALUE - MIN_STEPANGLE_CTRL_VALUE) * 65535.0f
@@ -295,27 +294,28 @@ int16_t stepAngleToCtrlValue(float angle)  {
 }
 
 float ctrlValueToCurrent(int16_t ctrlValue) {
-    int32_t v = std::clamp<int32_t>(static_cast<int32_t>(ctrlValue), -32768, 32767);
+    int16_t v    = std::clamp<int16_t>(static_cast<int16_t>(ctrlValue), -32768, 32767);
     float scaled = (static_cast<float>(v) + 32768.0f) / 65535.0f;
     return scaled * (MAX_CURRENT_CTRL_VALUE - MIN_CURRENT_CTRL_VALUE) + MIN_CURRENT_CTRL_VALUE;
 }
 
 float ctrlValueToSpeed(int16_t ctrlValue) {
-    int32_t v = std::clamp<int32_t>(static_cast<int32_t>(ctrlValue), -32768, 32767);
+    int16_t v    = std::clamp<int16_t>(static_cast<int16_t>(ctrlValue), -32768, 32767);
     float scaled = (static_cast<float>(v) + 32768.0f) / 65535.0f;
     return scaled * (MAX_SPEED_CTRL_VALUE - MIN_SPEED_CTRL_VALUE) + MIN_SPEED_CTRL_VALUE;
 }
 
-float ctrlValueToAngle(int16_t ctrlValue) {
-    int32_t v = std::clamp<int32_t>(static_cast<int32_t>(ctrlValue), -32768, 32767);
-    float scaled = (static_cast<float>(v) + 32768.0f) / 65535.0f;
+float ctrlValueToAngle(uint16_t ctrlValue) {
+    uint16_t v   = std::clamp<uint16_t>(static_cast<uint16_t>(ctrlValue), 0, 65535);
+    float scaled = (static_cast<float>(v)) / 65535.0f;
     return scaled * (MAX_ANGLE_CTRL_VALUE - MIN_ANGLE_CTRL_VALUE) + MIN_ANGLE_CTRL_VALUE;
 }
 
 float ctrlValueToStepAngle(int16_t ctrlValue) {
-    int32_t v = std::clamp<int32_t>(static_cast<int32_t>(ctrlValue), -32768, 32767);
+    int16_t v    = std::clamp<int16_t>(static_cast<int16_t>(ctrlValue), -32768, 32767);
     float scaled = (static_cast<float>(v) + 32768.0f) / 65535.0f;
-    return scaled * (MAX_STEPANGLE_CTRL_VALUE - MIN_STEPANGLE_CTRL_VALUE) + MIN_STEPANGLE_CTRL_VALUE;
+    return scaled * (MAX_STEPANGLE_CTRL_VALUE - MIN_STEPANGLE_CTRL_VALUE)
+        + MIN_STEPANGLE_CTRL_VALUE;
 }
 
 } // namespace qdriver::interface
