@@ -282,7 +282,7 @@ int16_t angleToCtrlValue(float angle) {
     float scaled =
         (std::clamp(angle, MIN_ANGLE_CTRL_VALUE, MAX_ANGLE_CTRL_VALUE) - MIN_ANGLE_CTRL_VALUE)
         / (MAX_ANGLE_CTRL_VALUE - MIN_ANGLE_CTRL_VALUE) * 65535.0f;
-    return static_cast<uint16_t>(scaled);
+    return static_cast<int16_t>(scaled);
 }
 
 int16_t stepAngleToCtrlValue(float angle) {
