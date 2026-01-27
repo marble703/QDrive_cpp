@@ -44,14 +44,29 @@ Serial::Serial(
     ) {}
 
 Serial::~Serial() {
-    if (serialPort_.is_open()) {
-        logger_->info("[Serial] Closing serial port: {}", portName_);
-        serialPort_.close();
-    }
+    close();
 }
 
 bool Serial::isOpen() const {
     return serialPort_.is_open();
+}
+
+void Serial::close() noexcept {
+    if (!serialPort_.is_open()) {
+        return;
+    }
+
+    try {
+        logger_->info("[Serial] Closing serial port: {}", portName_);
+        boost::system::error_code ec;
+        serialPort_.cancel(ec);
+        serialPort_.close(ec);
+        if (ec) {
+            logger_->warn("[Serial] Close error on {}: {}", portName_, ec.message());
+        }
+    } catch (...) {
+        // best-effort shutdown
+    }
 }
 
 std::string Serial::getPortName() const {

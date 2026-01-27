@@ -86,6 +86,8 @@ public:
 
     bool isOpen() const;
 
+    void close() noexcept;
+
     std::string getPortName() const;
 
     // size 作为最大读取长度传入

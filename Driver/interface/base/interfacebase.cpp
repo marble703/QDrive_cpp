@@ -34,6 +34,10 @@ InterfaceBase::InterfaceBase(
 InterfaceBase::~InterfaceBase() {
     logger_->debug("[InterfaceBase] Destroying, stopping reader thread");
     this->stopReaderThread_.store(true);
+
+    if (this->ioType_ == ioType::SERIAL && this->serialPortPtr_) {
+        this->serialPortPtr_->close();
+    }
     if (this->readerThread_.joinable()) {
         this->readerThread_.join();
     }
@@ -195,6 +199,10 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
 
 bool InterfaceBase::ReleaseReaderThread() {
     this->stopReaderThread_.store(true);
+
+    if (this->ioType_ == ioType::SERIAL && this->serialPortPtr_) {
+        this->serialPortPtr_->close();
+    }
     if (this->readerThread_.joinable()) {
         this->readerThread_.join();
     }

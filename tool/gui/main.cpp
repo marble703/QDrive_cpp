@@ -8,6 +8,9 @@
 #include "app_config.hpp"
 #include "motor_controller.hpp"
 
+#include <algorithm>
+#include <memory>
+
 // Forward declaration of helper
 static void glfw_error_callback(int error, const char* description) {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -87,7 +90,7 @@ int main(int, char**) {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // App state
-    MotorController motor;
+    auto motor     = std::make_unique<MotorController>();
     bool connected = false;
 
     // Load config from file
@@ -162,11 +165,11 @@ int main(int, char**) {
             );
 
             if (ImGui::Button("Connect")) {
-                motor.setCanIds(
+                motor->setCanIds(
                     static_cast<uint32_t>(sendIdInput),
                     static_cast<uint32_t>(recvIdInput)
                 );
-                if (motor.init(serialDev, canIf)) {
+                if (motor->init(serialDev, canIf)) {
                     connected           = true;
                     appCfg.serialPort   = serialDev;
                     appCfg.canInterface = canIf;
@@ -178,15 +181,20 @@ int main(int, char**) {
         } else {
             ImGui::Text("Connected to %s and %s", serialDev, canIf);
             if (ImGui::Button("Disconnect")) {
-                motor.stop();
+                motor->stop();
+                motor.reset(new MotorController());
                 connected = false;
+
+                std::fill(speedHistory.begin(), speedHistory.end(), 0.0f);
+                std::fill(angleHistory.begin(), angleHistory.end(), 0.0f);
+                std::fill(currentHistory.begin(), currentHistory.end(), 0.0f);
             }
         }
 
         ImGui::Separator();
 
         // Status view
-        MotorState state = motor.getState();
+        MotorState state = motor->getState();
         ImGui::Text("Status: %d", state.status);
         ImGui::Text("Speed: %.6f rpm", state.speed);
         ImGui::Text("Angle: %.6f rad", state.angle);
@@ -241,13 +249,13 @@ int main(int, char**) {
         // Control
         if (connected) {
             if (ImGui::Button("Enable"))
-                motor.enable();
+                motor->enable();
             ImGui::SameLine();
             if (ImGui::Button("Disable"))
-                motor.disable();
+                motor->disable();
             ImGui::SameLine();
             if (ImGui::Button("Reboot"))
-                motor.reboot();
+                motor->reboot();
 
             ImGui::RadioButton("Monitor", &controlMode, 0);
             ImGui::SameLine();
@@ -272,7 +280,7 @@ int main(int, char**) {
                         std::clamp(targetSpeed, MIN_SPEED_CTRL_VALUE, MAX_SPEED_CTRL_VALUE);
                 }
                 if (sliderChanged || inputChanged) {
-                    motor.setTargetSpeed(targetSpeed);
+                    motor->setTargetSpeed(targetSpeed);
                 }
             } else if (controlMode == 2) {
                 bool sliderChanged = ImGui::SliderFloat(
@@ -289,7 +297,7 @@ int main(int, char**) {
                         std::clamp(targetAngle, MIN_ANGLE_CTRL_VALUE, MAX_ANGLE_CTRL_VALUE);
                 }
                 if (sliderChanged || inputChanged) {
-                    motor.setTargetAngle(targetAngle);
+                    motor->setTargetAngle(targetAngle);
                 }
             } else if (controlMode == 3) {
                 bool sliderChanged = ImGui::SliderFloat(
@@ -306,7 +314,7 @@ int main(int, char**) {
                         std::clamp(targetCurrent, MIN_CURRENT_CTRL_VALUE, MAX_CURRENT_CTRL_VALUE);
                 }
                 if (sliderChanged || inputChanged) {
-                    motor.setTargetCurrent(targetCurrent);
+                    motor->setTargetCurrent(targetCurrent);
                 }
             } else {
                 // Monitor mode
@@ -318,10 +326,10 @@ int main(int, char**) {
         // Configuration (Serial)
         if (ImGui::CollapsingHeader("PID Configuration")) {
             if (ImGui::Button("Refresh Config")) {
-                motor.requestConfigRefresh();
+                motor->requestConfigRefresh();
             }
 
-            ConfigSnapshot cfg = motor.getConfigSnapshot();
+            ConfigSnapshot cfg = motor->getConfigSnapshot();
             bool hasAnyConfig = cfg.hasSpeedKp || cfg.hasSpeedKi || cfg.hasSpeedKd || cfg.hasAngleKp
                 || cfg.hasAngleKi || cfg.hasAngleKd || cfg.hasLimitSpd || cfg.hasLimitCur
                 || cfg.hasCanId || cfg.hasCanBaud;
@@ -353,7 +361,7 @@ int main(int, char**) {
 
             ImGui::SameLine();
             if (ImGui::Button("Apply Config to Inputs")) {
-                ConfigSnapshot snap = motor.getConfigSnapshot();
+                ConfigSnapshot snap = motor->getConfigSnapshot();
                 bool anyCfg         = snap.hasSpeedKp || snap.hasSpeedKi || snap.hasSpeedKd
                     || snap.hasAngleKp || snap.hasAngleKi || snap.hasAngleKd || snap.hasLimitSpd
                     || snap.hasLimitCur || snap.hasCanId || snap.hasCanBaud;
@@ -385,12 +393,12 @@ int main(int, char**) {
             }
             ImGui::SameLine();
             if (ImGui::Button("Send Config to Motor")) {
-                motor.configSpeedPID(speedKP, speedKI, speedKD);
-                motor.configAnglePID(angleKP, angleKI, angleKD);
-                motor.configLimitSpeed(limitSpeed);
-                motor.configLimitCurrent(limitCurrent);
-                motor.configCanID((uint32_t)configCanId);
-                motor.configBaudRate((uint32_t)configBaud);
+                motor->configSpeedPID(speedKP, speedKI, speedKD);
+                motor->configAnglePID(angleKP, angleKI, angleKD);
+                motor->configLimitSpeed(limitSpeed);
+                motor->configLimitCurrent(limitCurrent);
+                motor->configCanID((uint32_t)configCanId);
+                motor->configBaudRate((uint32_t)configBaud);
                 std::cout << "[ConfigSend] Sent config to motor." << std::endl;
             }
 
@@ -399,7 +407,7 @@ int main(int, char**) {
             ImGui::InputFloat("S-KI", &speedKI, 0.0f, 0.0f, "%.6f");
             ImGui::InputFloat("S-KD", &speedKD, 0.0f, 0.0f, "%.6f");
             if (ImGui::Button("Apply Speed PID")) {
-                motor.configSpeedPID(speedKP, speedKI, speedKD);
+                motor->configSpeedPID(speedKP, speedKI, speedKD);
             }
 
             ImGui::Separator();
@@ -408,36 +416,36 @@ int main(int, char**) {
             ImGui::InputFloat("A-KI", &angleKI, 0.0f, 0.0f, "%.6f");
             ImGui::InputFloat("A-KD", &angleKD, 0.0f, 0.0f, "%.6f");
             if (ImGui::Button("Apply Angle PID")) {
-                motor.configAnglePID(angleKP, angleKI, angleKD);
+                motor->configAnglePID(angleKP, angleKI, angleKD);
             }
 
             ImGui::Separator();
             ImGui::Text("Limits & Sys Config");
             ImGui::InputFloat("Limit Speed", &limitSpeed);
             if (ImGui::Button("Set Speed Limit"))
-                motor.configLimitSpeed(limitSpeed);
+                motor->configLimitSpeed(limitSpeed);
 
             ImGui::InputFloat("Limit Current", &limitCurrent);
             if (ImGui::Button("Set Current Limit"))
-                motor.configLimitCurrent(limitCurrent);
+                motor->configLimitCurrent(limitCurrent);
 
             // Display ranges moved to their own collapsing header below
             ImGui::Separator();
 
             ImGui::InputInt("New CAN ID", &configCanId);
             if (ImGui::Button("Set CAN ID (0-8)"))
-                motor.configCanID((uint32_t)configCanId);
+                motor->configCanID((uint32_t)configCanId);
 
             ImGui::InputInt("Baud Rate", &configBaud);
             if (ImGui::Button("Set Baud Rate"))
-                motor.configBaudRate((uint32_t)configBaud);
+                motor->configBaudRate((uint32_t)configBaud);
 
             ImGui::Separator();
             if (ImGui::Button("Store Config"))
-                motor.store();
+                motor->store();
             ImGui::SameLine();
             if (ImGui::Button("Restore Config"))
-                motor.restore();
+                motor->restore();
         }
 
         if (ImGui::CollapsingHeader("Display Ranges")) {
