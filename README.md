@@ -6,6 +6,9 @@
 
 正在开发中，欢迎提 issue 和 pr
 
+已知问题： 在 gui 中，未启动 can 可能导致程序崩溃 
+点击 disconnect 可能导致程序崩溃
+
 ## 代码结构
 
 Driver(驱动部分) 
@@ -48,8 +51,8 @@ Arch Linux
 
 ` cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j`
 
-可以设置 `WITHOUT_GUI=ON` 参数忽略调试界面及其 imgui 依赖
-可以设置 `WITHOUT_LOGGER=ON` 参数忽略日志模块及其 spdlog 依赖
+可以设置 `WITHOUT_GUI=ON` 参数忽略调试界面及其 imgui 依赖 
+可以设置 `WITHOUT_LOGGER=ON` 参数忽略日志模块及其 spdlog 依赖 
 由于 example 依赖 logger 依赖，会同时忽略 example 部分
 
 ## 运行示例
