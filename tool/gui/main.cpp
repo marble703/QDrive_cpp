@@ -127,6 +127,14 @@ int main(int, char**) {
     float displayMinCurrent = appCfg.displayMinCurrent;
     float displayMaxCurrent = appCfg.displayMaxCurrent;
 
+    // Error-only ranges (do NOT affect control calculations). Initialize from persisted config
+    float errorMinSpeed   = appCfg.errorMinSpeed;
+    float errorMaxSpeed   = appCfg.errorMaxSpeed;
+    float errorMinAngle   = appCfg.errorMinAngle;
+    float errorMaxAngle   = appCfg.errorMaxAngle;
+    float errorMinCurrent = appCfg.errorMinCurrent;
+    float errorMaxCurrent = appCfg.errorMaxCurrent;
+
     int configCanId = 0;
     int configBaud  = 115200;
 
@@ -134,7 +142,12 @@ int main(int, char**) {
     std::vector<float> speedHistory(1000, 0);
     std::vector<float> angleHistory(1000, 0);
     std::vector<float> currentHistory(1000, 0);
+    std::vector<float> speedErrorHistory(1000, 0);
+    std::vector<float> angleErrorHistory(1000, 0);
+    std::vector<float> currentErrorHistory(1000, 0);
     size_t plotIdx = 0;
+
+    int lastControlMode = controlMode;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -188,6 +201,9 @@ int main(int, char**) {
                 std::fill(speedHistory.begin(), speedHistory.end(), 0.0f);
                 std::fill(angleHistory.begin(), angleHistory.end(), 0.0f);
                 std::fill(currentHistory.begin(), currentHistory.end(), 0.0f);
+                std::fill(speedErrorHistory.begin(), speedErrorHistory.end(), 0.0f);
+                std::fill(angleErrorHistory.begin(), angleErrorHistory.end(), 0.0f);
+                std::fill(currentErrorHistory.begin(), currentErrorHistory.end(), 0.0f);
             }
         }
 
@@ -208,6 +224,24 @@ int main(int, char**) {
             angleHistory.push_back(state.angle);
             currentHistory.erase(currentHistory.begin());
             currentHistory.push_back(state.current);
+
+            if (controlMode != lastControlMode) {
+                std::fill(speedErrorHistory.begin(), speedErrorHistory.end(), 0.0f);
+                std::fill(angleErrorHistory.begin(), angleErrorHistory.end(), 0.0f);
+                std::fill(currentErrorHistory.begin(), currentErrorHistory.end(), 0.0f);
+                lastControlMode = controlMode;
+            }
+
+            if (controlMode == 1) {
+                speedErrorHistory.erase(speedErrorHistory.begin());
+                speedErrorHistory.push_back(targetSpeed - state.speed);
+            } else if (controlMode == 2) {
+                angleErrorHistory.erase(angleErrorHistory.begin());
+                angleErrorHistory.push_back(targetAngle - state.angle);
+            } else if (controlMode == 3) {
+                currentErrorHistory.erase(currentErrorHistory.begin());
+                currentErrorHistory.push_back(targetCurrent - state.current);
+            }
         }
 
         PlotLinesWithGrid(
@@ -243,6 +277,45 @@ int main(int, char**) {
             5,
             controlMode == 3 ? targetCurrent : NAN // Show target in current control mode
         );
+
+        // Error plot: only show for the active control variable
+        if (connected && controlMode == 1) {
+            PlotLinesWithGrid(
+                "Speed Error",
+                speedErrorHistory.data(),
+                speedErrorHistory.size(),
+                errorMinSpeed,
+                errorMaxSpeed,
+                ImVec2(0, 120),
+                10,
+                5,
+                0.0f
+            );
+        } else if (connected && controlMode == 2) {
+            PlotLinesWithGrid(
+                "Angle Error",
+                angleErrorHistory.data(),
+                angleErrorHistory.size(),
+                errorMinAngle,
+                errorMaxAngle,
+                ImVec2(0, 120),
+                10,
+                5,
+                0.0f
+            );
+        } else if (connected && controlMode == 3) {
+            PlotLinesWithGrid(
+                "Current Error",
+                currentErrorHistory.data(),
+                currentErrorHistory.size(),
+                errorMinCurrent,
+                errorMaxCurrent,
+                ImVec2(0, 120),
+                10,
+                5,
+                0.0f
+            );
+        }
 
         ImGui::Separator();
 
@@ -456,6 +529,15 @@ int main(int, char**) {
             ImGui::InputFloat("Display Min Current", &displayMinCurrent);
             ImGui::InputFloat("Display Max Current", &displayMaxCurrent);
 
+            ImGui::Separator();
+            ImGui::TextUnformatted("Error Ranges");
+            ImGui::InputFloat("Error Min Speed", &errorMinSpeed);
+            ImGui::InputFloat("Error Max Speed", &errorMaxSpeed);
+            ImGui::InputFloat("Error Min Angle", &errorMinAngle);
+            ImGui::InputFloat("Error Max Angle", &errorMaxAngle);
+            ImGui::InputFloat("Error Min Current", &errorMinCurrent);
+            ImGui::InputFloat("Error Max Current", &errorMaxCurrent);
+
             // Simple guards to keep display ranges valid
             if (displayMinSpeed >= displayMaxSpeed)
                 displayMaxSpeed = displayMinSpeed + 1e-3f;
@@ -464,13 +546,27 @@ int main(int, char**) {
             if (displayMinCurrent >= displayMaxCurrent)
                 displayMaxCurrent = displayMinCurrent + 1e-3f;
 
-            if (ImGui::Button("Save Display Ranges")) {
+            if (errorMinSpeed >= errorMaxSpeed)
+                errorMaxSpeed = errorMinSpeed + 1e-3f;
+            if (errorMinAngle >= errorMaxAngle)
+                errorMaxAngle = errorMinAngle + 1e-6f;
+            if (errorMinCurrent >= errorMaxCurrent)
+                errorMaxCurrent = errorMinCurrent + 1e-3f;
+
+            if (ImGui::Button("Save Display/Error Ranges")) {
                 appCfg.displayMinSpeed   = displayMinSpeed;
                 appCfg.displayMaxSpeed   = displayMaxSpeed;
                 appCfg.displayMinAngle   = displayMinAngle;
                 appCfg.displayMaxAngle   = displayMaxAngle;
                 appCfg.displayMinCurrent = displayMinCurrent;
                 appCfg.displayMaxCurrent = displayMaxCurrent;
+
+                appCfg.errorMinSpeed   = errorMinSpeed;
+                appCfg.errorMaxSpeed   = errorMaxSpeed;
+                appCfg.errorMinAngle   = errorMinAngle;
+                appCfg.errorMaxAngle   = errorMaxAngle;
+                appCfg.errorMinCurrent = errorMinCurrent;
+                appCfg.errorMaxCurrent = errorMaxCurrent;
                 saveConfig(appCfg);
                 std::cout << "[Config] Saved display ranges to qdrive_gui.conf" << std::endl;
             }

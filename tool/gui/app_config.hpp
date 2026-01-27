@@ -17,6 +17,14 @@ struct AppConfig {
     float displayMaxAngle   = MAX_ANGLE_CTRL_VALUE;
     float displayMinCurrent = MIN_CURRENT_CTRL_VALUE;
     float displayMaxCurrent = MAX_CURRENT_CTRL_VALUE;
+
+    // Error plot ranges persisted for the UI
+    float errorMinSpeed   = -MAX_SPEED_CTRL_VALUE;
+    float errorMaxSpeed   = MAX_SPEED_CTRL_VALUE;
+    float errorMinAngle   = -PI;
+    float errorMaxAngle   = PI;
+    float errorMinCurrent = -MAX_CURRENT_CTRL_VALUE;
+    float errorMaxCurrent = MAX_CURRENT_CTRL_VALUE;
 };
 
 inline void saveConfig(const AppConfig& cfg, const std::string& filename = "qdrive_gui.conf") {
@@ -32,6 +40,13 @@ inline void saveConfig(const AppConfig& cfg, const std::string& filename = "qdri
         f << "display_max_angle=" << cfg.displayMaxAngle << "\n";
         f << "display_min_current=" << cfg.displayMinCurrent << "\n";
         f << "display_max_current=" << cfg.displayMaxCurrent << "\n";
+
+        f << "error_min_speed=" << cfg.errorMinSpeed << "\n";
+        f << "error_max_speed=" << cfg.errorMaxSpeed << "\n";
+        f << "error_min_angle=" << cfg.errorMinAngle << "\n";
+        f << "error_max_angle=" << cfg.errorMaxAngle << "\n";
+        f << "error_min_current=" << cfg.errorMinCurrent << "\n";
+        f << "error_max_current=" << cfg.errorMaxCurrent << "\n";
     }
 }
 
@@ -66,6 +81,18 @@ inline AppConfig loadConfig(const std::string& filename = "qdrive_gui.conf") {
                 cfg.displayMinCurrent = std::stof(val);
             else if (key == "display_max_current")
                 cfg.displayMaxCurrent = std::stof(val);
+            else if (key == "error_min_speed")
+                cfg.errorMinSpeed = std::stof(val);
+            else if (key == "error_max_speed")
+                cfg.errorMaxSpeed = std::stof(val);
+            else if (key == "error_min_angle")
+                cfg.errorMinAngle = std::stof(val);
+            else if (key == "error_max_angle")
+                cfg.errorMaxAngle = std::stof(val);
+            else if (key == "error_min_current")
+                cfg.errorMinCurrent = std::stof(val);
+            else if (key == "error_max_current")
+                cfg.errorMaxCurrent = std::stof(val);
         }
     }
     return cfg;

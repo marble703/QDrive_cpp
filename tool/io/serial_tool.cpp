@@ -13,7 +13,7 @@ void handle_sigint(int) {
 }
 
 struct Options {
-    std::string port    = "/dev/QD4310-1";
+    std::string port    = "/dev/QD4310-0";
     uint32_t baud       = 115200;
     std::string outfile = "serial_out.log";
     std::size_t chunk   = 256; // 每次读取的字节数
@@ -36,7 +36,7 @@ bool parse_args(int argc, char** argv, Options& opt) {
             continue;
         }
         if ((a == "-b" || a == "--baud") && i + 1 < argc) {
-            opt.baud = std::stoul(argv[++i]);
+            opt.baud = static_cast<uint32_t>(std::stoul(argv[++i]));
             continue;
         }
         if ((a == "-o" || a == "--out") && i + 1 < argc) {
