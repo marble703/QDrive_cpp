@@ -17,9 +17,9 @@ if [ -z "$OUTPUT" ]; then
 fi
 
 # 提取值
-ID_VENDOR=$(echo "$OUTPUT" | grep idVendor | sed -n 's/.*== "\(.*\)".*/\1/p')
-ID_PRODUCT=$(echo "$OUTPUT" | grep idProduct | sed -n 's/.*== "\(.*\)".*/\1/p')
-SERIAL=$(echo "$OUTPUT" | grep serial | sed -n 's/.*== "\(.*\)".*/\1/p')
+ID_VENDOR=$(echo "$OUTPUT" | grep idVendor | head -n 1 | sed -n 's/.*=="\(.*\)".*/\1/p')
+ID_PRODUCT=$(echo "$OUTPUT" | grep idProduct | head -n 1 | sed -n 's/.*=="\(.*\)".*/\1/p')
+SERIAL=$(echo "$OUTPUT" | grep serial | head -n 1 | sed -n 's/.*=="\(.*\)".*/\1/p')
 
 if [ -z "$ID_VENDOR" ] || [ -z "$ID_PRODUCT" ] || [ -z "$SERIAL" ]; then
     echo "Error: Missing required attributes (idVendor, idProduct, or serial)."
