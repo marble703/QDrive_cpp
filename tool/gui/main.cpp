@@ -19,7 +19,7 @@ static void glfw_error_callback(int error, const char* description) {
 static void PlotLinesWithGrid(
     const char* label,
     const float* values,
-    int values_count,
+    size_t values_count,
     float scale_min,
     float scale_max,
     ImVec2 size        = ImVec2(0, 80),
@@ -47,7 +47,16 @@ static void PlotLinesWithGrid(
         dl->AddLine(ImVec2(pos.x, y), ImVec2(br.x, y), gridCol);
     }
 
-    ImGui::PlotLines(label, values, values_count, 0, NULL, scale_min, scale_max, size);
+    ImGui::PlotLines(
+        label,
+        values,
+        static_cast<int>(values_count),
+        0,
+        NULL,
+        scale_min,
+        scale_max,
+        size
+    );
 
     // Draw target reference line if provided and within range
     if (!std::isnan(target_value) && target_value >= scale_min && target_value <= scale_max) {

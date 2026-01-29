@@ -49,7 +49,7 @@ Can::~Can() {
     }
 }
 
-bool Can::sendFrame(const std::vector<uint8_t>& data, size_t id) {
+bool Can::sendFrame(const std::vector<uint8_t>& data, unsigned int id) {
     if (sock_ < 0) {
         logger_->error("[CAN] Cannot send frame: socket not open");
         return false;
@@ -71,7 +71,7 @@ bool Can::sendFrame(const std::vector<uint8_t>& data, size_t id) {
     if (data.size() > 8) {
         frame.can_dlc = 8;
     } else {
-        frame.can_dlc = data.size();
+        frame.can_dlc = static_cast<__u8>(data.size());
     }
 
     std::copy(data.begin(), data.begin() + frame.can_dlc, frame.data);
@@ -117,7 +117,7 @@ bool Can::receiveFrame(std::vector<uint8_t>& data, std::shared_ptr<size_t> id) {
     }
 
     can_frame frame;
-    int nbytes = read(sock_, &frame, sizeof(can_frame));
+    ssize_t nbytes = read(sock_, &frame, sizeof(can_frame));
 
     // 读取错误
     if (nbytes < 0) {
