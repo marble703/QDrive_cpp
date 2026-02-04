@@ -92,6 +92,8 @@ chmod +x create-udev-rule.sh
 
 调试界面
 
+![](docs/gui.png)
+
 `./build/tool/gui/qdrive_gui`
 
 串口调试工具
