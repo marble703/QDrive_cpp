@@ -79,6 +79,15 @@ public:
     // State access
     MotorState getState();
 
+    // Direct interface access (for simplified usage)
+    std::shared_ptr<qdriver::interface::Interface> getSerialInterface() { return interfaceSerial_; }
+    std::shared_ptr<qdriver::interface::Interface> getCanInterface() { return interfaceCan_; }
+
+    // Check if waiting for confirmation
+    bool isWaitingConfirm();
+    std::string getLastConfirmResult();
+    void clearConfirmResult();
+
     // Control commands
     void setTargetSpeed(float s);
     void setTargetCurrent(float c);
@@ -150,4 +159,9 @@ private:
     // Config storage
     std::mutex configMutex_;
     ConfigSnapshot lastConfig_;
+
+    // Confirmation tracking
+    std::mutex confirmMutex_;
+    bool waitingConfirm_ = false;
+    std::string lastConfirmResult_;
 };

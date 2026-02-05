@@ -147,13 +147,36 @@ void MotorController::configBaudRate(uint32_t b) {
 }
 
 void MotorController::store() {
-    if (interfaceSerial_)
+    if (interfaceSerial_) {
         interfaceSerial_->store();
+        std::lock_guard<std::mutex> lock(confirmMutex_);
+        waitingConfirm_ = true;
+        lastConfirmResult_.clear();
+    }
 }
 
 void MotorController::restore() {
-    if (interfaceSerial_)
+    if (interfaceSerial_) {
         interfaceSerial_->restore();
+        std::lock_guard<std::mutex> lock(confirmMutex_);
+        waitingConfirm_ = true;
+        lastConfirmResult_.clear();
+    }
+}
+
+bool MotorController::isWaitingConfirm() {
+    std::lock_guard<std::mutex> lock(confirmMutex_);
+    return waitingConfirm_;
+}
+
+std::string MotorController::getLastConfirmResult() {
+    std::lock_guard<std::mutex> lock(confirmMutex_);
+    return lastConfirmResult_;
+}
+
+void MotorController::clearConfirmResult() {
+    std::lock_guard<std::mutex> lock(confirmMutex_);
+    lastConfirmResult_.clear();
 }
 
 void MotorController::reboot() {
@@ -233,6 +256,22 @@ void MotorController::parseSerialMessage(std::string& msg) {
 }
 
 void MotorController::parseConfigLine(const std::string& line) {
+    // Check for confirmation result
+    if (line.find("completed") != std::string::npos) {
+        std::lock_guard<std::mutex> lock(confirmMutex_);
+        waitingConfirm_ = false;
+        lastConfirmResult_ = "completed";
+        std::cout << "[Confirm] Operation completed." << std::endl;
+        return;
+    }
+    if (line.find("cancelled") != std::string::npos) {
+        std::lock_guard<std::mutex> lock(confirmMutex_);
+        waitingConfirm_ = false;
+        lastConfirmResult_ = "cancelled";
+        std::cout << "[Confirm] Operation cancelled." << std::endl;
+        return;
+    }
+
     static const std::regex re(
         R"((pid\.speed\.kp|pid\.speed\.ki|pid\.speed\.kd|pid\.angle\.kp|pid\.angle\.ki|pid\.angle\.kd|limit\.speed|limit\.current|can\.id|can\.baud_rate|baudrate)\s*=\s*([0-9eE\+\-\.']+))"
     );

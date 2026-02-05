@@ -8,7 +8,7 @@
 #include "app_config.hpp"
 #include "motor_controller.hpp"
 
-#include <algorithm>
+#include <future>
 #include <memory>
 
 // Forward declaration of helper
@@ -146,6 +146,14 @@ int main(int, char**) {
 
     int configCanId = 0;
     int configBaud  = 115200;
+
+    // Async config sending state
+    std::atomic<bool> sendingConfig { false };
+    std::future<void> configFuture;
+
+    // Confirmation dialog state
+    bool showConfirmDialog = false;
+    std::string confirmAction = "";
 
     // Plotting buffers
     std::vector<float> speedHistory(1000, 0);
@@ -474,14 +482,40 @@ int main(int, char**) {
                 }
             }
             ImGui::SameLine();
-            if (ImGui::Button("Send Config to Motor")) {
-                motor->configSpeedPID(speedKP, speedKI, speedKD);
-                motor->configAnglePID(angleKP, angleKI, angleKD);
-                motor->configLimitSpeed(limitSpeed);
-                motor->configLimitCurrent(limitCurrent);
-                motor->configCanID((uint32_t)configCanId);
-                motor->configBaudRate((uint32_t)configBaud);
-                std::cout << "[ConfigSend] Sent config to motor." << std::endl;
+            if (ImGui::Button("Send Config to Motor") && !sendingConfig.load()) {
+                // Copy values to avoid race conditions with UI thread
+                float sKP = speedKP, sKI = speedKI, sKD = speedKD;
+                float aKP = angleKP, aKI = angleKI, aKD = angleKD;
+                float limSpd = limitSpeed, limCur = limitCurrent;
+                uint32_t canId = static_cast<uint32_t>(configCanId);
+                uint32_t baud  = static_cast<uint32_t>(configBaud);
+                auto motorPtr  = motor.get();
+
+                sendingConfig = true;
+                configFuture  = std::async(
+                    std::launch::async,
+                    [motorPtr, sKP, sKI, sKD, aKP, aKI, aKD, limSpd, limCur, canId, baud]() {
+                        motorPtr->configSpeedPID(sKP, sKI, sKD);
+                        
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        motorPtr->configAnglePID(aKP, aKI, aKD);
+                        motorPtr->configLimitSpeed(limSpd);
+                        motorPtr->configLimitCurrent(limCur);
+                        motorPtr->configCanID(canId);
+                        motorPtr->configBaudRate(baud);
+                        std::cout << "[ConfigSend] Sent config to motor." << std::endl;
+                    }
+                );
+            }
+            if (sendingConfig.load()) {
+                ImGui::SameLine();
+                ImGui::Text("Sending...");
+                if (configFuture.valid()
+                    && configFuture.wait_for(std::chrono::milliseconds(0))
+                        == std::future_status::ready)
+                {
+                    sendingConfig = false;
+                }
             }
 
             ImGui::Text("Speed PID");
@@ -516,18 +550,62 @@ int main(int, char**) {
 
             ImGui::InputInt("New CAN ID", &configCanId);
             if (ImGui::Button("Set CAN ID (0-8)"))
-                motor->configCanID((uint32_t)configCanId);
+                motor->configCanID(static_cast<uint32_t>(configCanId));
 
             ImGui::InputInt("Baud Rate", &configBaud);
             if (ImGui::Button("Set Baud Rate"))
-                motor->configBaudRate((uint32_t)configBaud);
+                motor->configBaudRate(static_cast<uint32_t>(configBaud));
 
             ImGui::Separator();
-            if (ImGui::Button("Store Config"))
+            if (ImGui::Button("Store Config")) {
                 motor->store();
+                showConfirmDialog = true;
+                confirmAction = "Store";
+            }
+
             ImGui::SameLine();
-            if (ImGui::Button("Restore Config"))
+            if (ImGui::Button("Restore Config")) {
                 motor->restore();
+                showConfirmDialog = true;
+                confirmAction = "Restore";
+            }
+        }
+
+        // Confirmation dialog
+        if (showConfirmDialog && motor->isWaitingConfirm()) {
+            ImGui::OpenPopup("Confirm Action");
+        }
+
+        if (ImGui::BeginPopupModal("Confirm Action", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Do you want to confirm the %s operation?", confirmAction.c_str());
+            ImGui::Separator();
+
+            if (ImGui::Button("Yes", ImVec2(120, 0))) {
+                auto serialIf = motor->getSerialInterface();
+                if (serialIf) {
+                    serialIf->confirm(true);
+                    std::cout << "[" << confirmAction << "] User confirmed: Yes" << std::endl;
+                }
+                showConfirmDialog = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("No", ImVec2(120, 0))) {
+                auto serialIf = motor->getSerialInterface();
+                if (serialIf) {
+                    serialIf->confirm(false);
+                    std::cout << "[" << confirmAction << "] User confirmed: No" << std::endl;
+                }
+                showConfirmDialog = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        // Check for confirmation result
+        std::string confirmResult = motor->getLastConfirmResult();
+        if (!confirmResult.empty()) {
+            motor->clearConfirmResult();
         }
 
         if (ImGui::CollapsingHeader("Display Ranges")) {
