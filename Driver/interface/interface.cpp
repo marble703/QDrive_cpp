@@ -169,6 +169,22 @@ bool Interface::restore() {
     return this->sendCommand({ .cmd = "restore" });
 }
 
+bool Interface::confirm(bool accept) {
+    if (this->getIoType() == ioType::CAN) {
+        throw std::runtime_error("Confirm command is not supported for CAN interface");
+    }
+    return accept ? this->sendCommand(
+                        {
+                            .cmd = "y",
+                        }
+                    )
+                  : this->sendCommand(
+                        {
+                            .cmd = "n",
+                        }
+                    );
+}
+
 bool Interface::configSpeed(float value, PIDtype pidType) {
     if (this->getIoType() == ioType::CAN) {
         throw std::runtime_error("ConfigSpeed command is not supported for CAN interface");

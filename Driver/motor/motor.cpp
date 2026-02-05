@@ -205,6 +205,13 @@ bool Motor::restore() {
     return false;
 }
 
+bool Motor::confirm(bool accept) {
+    if (this->getInterface(ioType::SERIAL)) {
+        return this->getInterface(ioType::SERIAL)->confirm(accept);
+    }
+    return false;
+}
+
 bool Motor::configSpeed(float value, PIDtype pidType) {
     if (this->getInterface(ioType::SERIAL)) {
         return this->getInterface(ioType::SERIAL)->configSpeed(value, pidType);
@@ -329,27 +336,22 @@ bool Motor::startReaderThread(std::function<void(CanMessage&)> readerFunction) {
                         return;
 
                     CanMessage canMsg;
-                    canMsg.canID   = id;
-                    canMsg.status  = static_cast<MotorStatus>(data[0]);
+                    canMsg.canID        = id;
+                    canMsg.status       = static_cast<MotorStatus>(data[0]);
                     uint16_t currentRaw = static_cast<uint16_t>(
-                        static_cast<uint16_t>(data[2])
-                        | (static_cast<uint16_t>(data[3]) << 8)
+                        static_cast<uint16_t>(data[2]) | (static_cast<uint16_t>(data[3]) << 8)
                     );
                     uint16_t speedRaw = static_cast<uint16_t>(
-                        static_cast<uint16_t>(data[4])
-                        | (static_cast<uint16_t>(data[5]) << 8)
+                        static_cast<uint16_t>(data[4]) | (static_cast<uint16_t>(data[5]) << 8)
                     );
                     uint16_t angleRaw = static_cast<uint16_t>(
-                        static_cast<uint16_t>(data[6])
-                        | (static_cast<uint16_t>(data[7]) << 8)
+                        static_cast<uint16_t>(data[6]) | (static_cast<uint16_t>(data[7]) << 8)
                     );
 
-                    canMsg.current = qdriver::interface::ctrlValueToCurrent(
-                        static_cast<int16_t>(currentRaw)
-                    );
-                    canMsg.speed = qdriver::interface::ctrlValueToSpeed(
-                        static_cast<int16_t>(speedRaw)
-                    );
+                    canMsg.current =
+                        qdriver::interface::ctrlValueToCurrent(static_cast<int16_t>(currentRaw));
+                    canMsg.speed =
+                        qdriver::interface::ctrlValueToSpeed(static_cast<int16_t>(speedRaw));
                     canMsg.angle = qdriver::interface::ctrlValueToAngle(angleRaw);
 
                     readerFunction(canMsg);

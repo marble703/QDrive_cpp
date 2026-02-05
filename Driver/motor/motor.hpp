@@ -147,6 +147,8 @@ public:
 
     /**
      * @brief 储存当前配置参数
+     *
+     * @note 必须确认
      * 
      * @pre 仅对串口接口有效
      */
@@ -154,10 +156,19 @@ public:
 
     /**
      * @brief 恢复出厂设置
+     *
+     * @note 必须确认
      * 
      * @pre 仅对串口接口有效
      */
     bool restore();
+
+    /**
+     * @brief 确认
+     * 
+     * @pre 仅对串口接口有效
+     */
+    bool confirm(bool accept = true);
 
     /**
      * @brief 配置速度控制的 PID 参数
