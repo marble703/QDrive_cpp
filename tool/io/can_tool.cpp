@@ -2,6 +2,7 @@
 #include "interface.hpp"
 
 #include <iostream>
+#include <optional>
 
 using namespace qdriver::io;
 using namespace qdriver::interface;
@@ -95,7 +96,7 @@ int main(int argc, char** argv) {
     // 读取线程：后台接收CAN数据
     std::thread reader([&]() {
         std::vector<uint8_t> data;
-        std::shared_ptr<size_t> can_id = std::make_shared<size_t>(0);
+        std::shared_ptr<uint32_t> can_id = std::make_shared<uint32_t>(0);
         while (g_running.load()) {
             if (can_bus->receiveFrame(data, can_id)) {
                 std::cout << "\n" << std::hex << std::setw(3) << std::setfill('0');
@@ -108,7 +109,7 @@ int main(int argc, char** argv) {
                 std::cout << std::dec << std::endl;
 
                 // 按协议解析反馈报文: ID = 0x500 + 电机ID, DLC = 8
-                int motor_id = static_cast<int>(*can_id - 0x500);
+                int motor_id = static_cast<int>(*can_id) - 0x500;
 
                 uint8_t status = data[0];
                 bool enable    = (status & 0x01) != 0; // bit0 使能标志
@@ -133,6 +134,13 @@ int main(int argc, char** argv) {
             }
         }
     });
+
+    auto parse_can_id = [](const std::string& token) -> std::optional<uint32_t> {
+        unsigned long parsed = std::stoul(token, nullptr, 16);
+        if (parsed > std::numeric_limits<uint32_t>::max())
+            return std::nullopt;
+        return static_cast<uint32_t>(parsed);
+    };
 
     // 主交互循环
     std::string line;
@@ -166,31 +174,37 @@ int main(int argc, char** argv) {
             } else if (cmd == "help") {
                 print_help();
             } else if (cmd == "enable") {
-                int can_id = -1;
+                std::optional<uint32_t> can_id;
                 if (tokens.size() > 1) {
-                    can_id = std::stoi(tokens[1], nullptr, 16);
+                    can_id = parse_can_id(tokens[1]);
+                    if (!can_id.has_value())
+                        throw std::out_of_range("can_id out of range");
                 }
-                if (interface->enable(can_id)) {
+                if (can_id.has_value() ? interface->enable(*can_id) : interface->enable()) {
                     std::cout << "✓ 使能命令已发送" << std::endl;
                 } else {
                     std::cout << "✗ 使能命令失败" << std::endl;
                 }
             } else if (cmd == "disable") {
-                int can_id = -1;
+                std::optional<uint32_t> can_id;
                 if (tokens.size() > 1) {
-                    can_id = std::stoi(tokens[1], nullptr, 16);
+                    can_id = parse_can_id(tokens[1]);
+                    if (!can_id.has_value())
+                        throw std::out_of_range("can_id out of range");
                 }
-                if (interface->disable(can_id)) {
+                if (can_id.has_value() ? interface->disable(*can_id) : interface->disable()) {
                     std::cout << "✓ 失能命令已发送" << std::endl;
                 } else {
                     std::cout << "✗ 失能命令失败" << std::endl;
                 }
             } else if (cmd == "status") {
-                int can_id = -1;
+                std::optional<uint32_t> can_id;
                 if (tokens.size() > 1) {
-                    can_id = std::stoi(tokens[1], nullptr, 16);
+                    can_id = parse_can_id(tokens[1]);
+                    if (!can_id.has_value())
+                        throw std::out_of_range("can_id out of range");
                 }
-                if (interface->status(can_id)) {
+                if (can_id.has_value() ? interface->status(*can_id) : interface->status()) {
                     std::cout << "✓ 状态查询命令已发送" << std::endl;
                 } else {
                     std::cout << "✗ 状态查询命令失败" << std::endl;
@@ -201,11 +215,14 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float current = std::stof(tokens[1]);
-                int can_id    = -1;
+                std::optional<uint32_t> can_id;
                 if (tokens.size() > 2) {
-                    can_id = std::stoi(tokens[2], nullptr, 16);
+                    can_id = parse_can_id(tokens[2]);
+                    if (!can_id.has_value())
+                        throw std::out_of_range("can_id out of range");
                 }
-                if (interface->ctrlCurrent(current, can_id)) {
+                if (can_id.has_value() ? interface->ctrlCurrent(current, *can_id)
+                                       : interface->ctrlCurrent(current)) {
                     std::cout << "✓ 电流控制命令已发送 (电流: " << current << "A)" << std::endl;
                 } else {
                     std::cout << "✗ 电流控制命令失败" << std::endl;
@@ -216,11 +233,14 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float speed = std::stof(tokens[1]);
-                int can_id  = -1;
+                std::optional<uint32_t> can_id;
                 if (tokens.size() > 2) {
-                    can_id = std::stoi(tokens[2], nullptr, 16);
+                    can_id = parse_can_id(tokens[2]);
+                    if (!can_id.has_value())
+                        throw std::out_of_range("can_id out of range");
                 }
-                if (interface->ctrlSpeed(speed, can_id)) {
+                if (can_id.has_value() ? interface->ctrlSpeed(speed, *can_id)
+                                       : interface->ctrlSpeed(speed)) {
                     std::cout << "✓ 速度控制命令已发送 (速度: " << speed << " rpm)" << std::endl;
                 } else {
                     std::cout << "✗ 速度控制命令失败" << std::endl;
@@ -231,11 +251,14 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float angle = std::stof(tokens[1]);
-                int can_id  = -1;
+                std::optional<uint32_t> can_id;
                 if (tokens.size() > 2) {
-                    can_id = std::stoi(tokens[2], nullptr, 16);
+                    can_id = parse_can_id(tokens[2]);
+                    if (!can_id.has_value())
+                        throw std::out_of_range("can_id out of range");
                 }
-                if (interface->ctrlAngle(angle, can_id)) {
+                if (can_id.has_value() ? interface->ctrlAngle(angle, *can_id)
+                                       : interface->ctrlAngle(angle)) {
                     std::cout << "✓ 角度控制命令已发送 (角度: " << angle << " rad)" << std::endl;
                 } else {
                     std::cout << "✗ 角度控制命令失败" << std::endl;
@@ -246,11 +269,14 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float speed = std::stof(tokens[1]);
-                int can_id  = -1;
+                std::optional<uint32_t> can_id;
                 if (tokens.size() > 2) {
-                    can_id = std::stoi(tokens[2], nullptr, 16);
+                    can_id = parse_can_id(tokens[2]);
+                    if (!can_id.has_value())
+                        throw std::out_of_range("can_id out of range");
                 }
-                if (interface->ctrlLowSpeed(speed, can_id)) {
+                if (can_id.has_value() ? interface->ctrlLowSpeed(speed, *can_id)
+                                       : interface->ctrlLowSpeed(speed)) {
                     std::cout << "✓ 低速控制命令已发送 (速度: " << speed << " rpm)" << std::endl;
                 } else {
                     std::cout << "✗ 低速控制命令失败" << std::endl;
@@ -261,11 +287,14 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 float angle = std::stof(tokens[1]);
-                int can_id  = -1;
+                std::optional<uint32_t> can_id;
                 if (tokens.size() > 2) {
-                    can_id = std::stoi(tokens[2], nullptr, 16);
+                    can_id = parse_can_id(tokens[2]);
+                    if (!can_id.has_value())
+                        throw std::out_of_range("can_id out of range");
                 }
-                if (interface->ctrlStepAngle(angle, can_id)) {
+                if (can_id.has_value() ? interface->ctrlStepAngle(angle, *can_id)
+                                       : interface->ctrlStepAngle(angle)) {
                     std::cout << "✓ 步进角度控制命令已发送 (角度: " << angle << " rad)"
                               << std::endl;
                 } else {

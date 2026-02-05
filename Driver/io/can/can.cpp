@@ -85,7 +85,7 @@ bool Can::sendFrame(const std::vector<uint8_t>& data, unsigned int id) {
     return result;
 }
 
-bool Can::receiveFrame(std::vector<uint8_t>& data, std::shared_ptr<size_t> id) {
+bool Can::receiveFrame(std::vector<uint8_t>& data, std::shared_ptr<uint32_t> id) {
     if (sock_ < 0) {
         logger_->error("[CAN] Cannot receive frame: socket not open");
         return false;
@@ -126,12 +126,12 @@ bool Can::receiveFrame(std::vector<uint8_t>& data, std::shared_ptr<size_t> id) {
     }
     // 帧不完整
 
-    if (nbytes < (int)sizeof(can_frame)) {
+    if (nbytes < static_cast<ssize_t>(sizeof(can_frame))) {
         logger_->warn("[CAN] Incomplete frame received: {} bytes", nbytes);
         return false;
     }
 
-    data.assign(frame.data, frame.data + frame.can_dlc);
+    data.assign(frame.data, frame.data + static_cast<std::size_t>(frame.can_dlc));
     if (id)
         *id = frame.can_id;
 

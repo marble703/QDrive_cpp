@@ -1,11 +1,13 @@
 #include "motor.hpp"
 
+#include <limits>
+
 namespace qdriver::motor {
 Motor::Motor(
     std::shared_ptr<qdriver::interface::Interface> interfacePtr,
     const std::string& name,
-    size_t sendCanID,
-    size_t receiveCanID,
+    uint32_t sendCanID,
+    uint32_t receiveCanID,
     std::shared_ptr<qdriver::logger::Logger> logger
 ):
     name_(name),
@@ -255,13 +257,13 @@ bool Motor::configBaudRate(unsigned int baudRate) {
     return false;
 }
 
-bool Motor::getCanID(size_t& sendCanID, size_t& receiveCanID) const {
+bool Motor::getCanID(uint32_t& sendCanID, uint32_t& receiveCanID) const {
     sendCanID    = this->sendCanID_;
     receiveCanID = this->receiveCanID_;
     return true;
 }
 
-bool Motor::setCanID(size_t sendCanID, size_t receiveCanID) {
+bool Motor::setCanID(uint32_t sendCanID, uint32_t receiveCanID) {
     if (sendCanID <= qdriver::interface::HIGH_SEND_CAN_ID
         && sendCanID >= qdriver::interface::LOW_SEND_CAN_ID
         && receiveCanID <= qdriver::interface::HIGH_RECV_CAN_ID
@@ -302,7 +304,10 @@ bool Motor::startReaderThread(std::function<void(CanMessage&)> readerFunction) {
 
                     uint32_t id = 0;
                     try {
-                        id = std::stoul(idStr);
+                        unsigned long parsed = std::stoul(idStr);
+                        if (parsed > std::numeric_limits<uint32_t>::max())
+                            return;
+                        id = static_cast<uint32_t>(parsed);
                     } catch (...) {
                         return;
                     }
@@ -311,7 +316,9 @@ bool Motor::startReaderThread(std::function<void(CanMessage&)> readerFunction) {
                     for (size_t i = 0; i + 1 < dataStr.size(); i += 2) {
                         std::string byteString = dataStr.substr(i, 2);
                         try {
-                            unsigned int val = std::stoul(byteString, nullptr, 16);
+                            unsigned long val = std::stoul(byteString, nullptr, 16);
+                            if (val > std::numeric_limits<uint8_t>::max())
+                                return;
                             data.push_back(static_cast<uint8_t>(val));
                         } catch (...) {
                             return;
@@ -324,9 +331,26 @@ bool Motor::startReaderThread(std::function<void(CanMessage&)> readerFunction) {
                     CanMessage canMsg;
                     canMsg.canID   = id;
                     canMsg.status  = static_cast<MotorStatus>(data[0]);
-                    canMsg.current = qdriver::interface::ctrlValueToCurrent((int16_t)(data[2] | (data[3] << 8)));
-                    canMsg.speed   = qdriver::interface::ctrlValueToSpeed((int16_t)(data[4] | (data[5] << 8)));
-                    canMsg.angle   = qdriver::interface::ctrlValueToAngle((uint16_t)(data[6] | (data[7] << 8)));
+                    uint16_t currentRaw = static_cast<uint16_t>(
+                        static_cast<uint16_t>(data[2])
+                        | (static_cast<uint16_t>(data[3]) << 8)
+                    );
+                    uint16_t speedRaw = static_cast<uint16_t>(
+                        static_cast<uint16_t>(data[4])
+                        | (static_cast<uint16_t>(data[5]) << 8)
+                    );
+                    uint16_t angleRaw = static_cast<uint16_t>(
+                        static_cast<uint16_t>(data[6])
+                        | (static_cast<uint16_t>(data[7]) << 8)
+                    );
+
+                    canMsg.current = qdriver::interface::ctrlValueToCurrent(
+                        static_cast<int16_t>(currentRaw)
+                    );
+                    canMsg.speed = qdriver::interface::ctrlValueToSpeed(
+                        static_cast<int16_t>(speedRaw)
+                    );
+                    canMsg.angle = qdriver::interface::ctrlValueToAngle(angleRaw);
 
                     readerFunction(canMsg);
                 } catch (...) {}

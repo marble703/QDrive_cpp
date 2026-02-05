@@ -46,7 +46,10 @@ int main() {
             std::string byteStr  = dataHex.substr(i, 2);
             unsigned int byteVal = 0;
             try {
-                byteVal = std::stoul(byteStr, nullptr, 16);
+                unsigned long parsed = std::stoul(byteStr, nullptr, 16);
+                if (parsed > std::numeric_limits<unsigned int>::max())
+                    return;
+                byteVal = static_cast<unsigned int>(parsed);
             } catch (...) {
                 return;
             }

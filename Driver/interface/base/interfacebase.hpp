@@ -3,16 +3,17 @@
 #include "can.hpp"
 #include "serial.hpp"
 
+
 #include <thread>
 
 #include "logger.hpp"
 
 namespace qdriver::interface {
 
-static const size_t LOW_SEND_CAN_ID  = 0x400;
-static const size_t HIGH_SEND_CAN_ID = 0x40F;
-static const size_t LOW_RECV_CAN_ID  = 0x500;
-static const size_t HIGH_RECV_CAN_ID = 0x50F;
+static const uint32_t LOW_SEND_CAN_ID  = 0x400;
+static const uint32_t HIGH_SEND_CAN_ID = 0x40F;
+static const uint32_t LOW_RECV_CAN_ID  = 0x500;
+static const uint32_t HIGH_RECV_CAN_ID = 0x50F;
 
 enum class ioType { SERIAL, CAN, NONE };
 

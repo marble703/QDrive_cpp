@@ -188,12 +188,13 @@ void MotorController::setCanIds(uint32_t send, uint32_t recv) {
 void MotorController::parseSerialMessage(std::string& msg) {
     std::string sanitized;
     sanitized.reserve(msg.size());
-    for (unsigned char c: msg) {
+    for (char c: msg) {
+        unsigned char uc = static_cast<unsigned char>(c);
         if (c == '\0')
             continue;
         if (c == '\n' || c == '\r' || c == '\t' || c == ' ') {
             sanitized.push_back(static_cast<char>(c));
-        } else if (std::isprint(c)) {
+        } else if (std::isprint(uc)) {
             sanitized.push_back(static_cast<char>(c));
         }
     }
@@ -308,22 +309,47 @@ void MotorController::parseCanMessage(std::string& msg) {
         std::string idStr   = msg.substr(0, colonPos);
         std::string dataStr = msg.substr(colonPos + 1);
 
-        uint32_t id = std::stoul(idStr);
+        uint32_t id = 0;
+        try {
+            unsigned long parsed = std::stoul(idStr);
+            if (parsed > std::numeric_limits<uint32_t>::max())
+                return;
+            id = static_cast<uint32_t>(parsed);
+        } catch (...) {
+            return;
+        }
         if (id != recvId_)
             return;
 
         std::vector<uint8_t> data;
         for (size_t i = 0; i < dataStr.length(); i += 2) {
             std::string byteString = dataStr.substr(i, 2);
-            data.push_back((uint8_t)strtol(byteString.c_str(), nullptr, 16));
+            try {
+                unsigned long val = std::stoul(byteString, nullptr, 16);
+                if (val > std::numeric_limits<uint8_t>::max())
+                    return;
+                data.push_back(static_cast<uint8_t>(val));
+            } catch (...) {
+                return;
+            }
         }
 
         if (data.size() < 8)
             return;
 
-        int16_t rawCurrent = (int16_t)(data[2] | (data[3] << 8));
-        int16_t rawSpeed   = (int16_t)(data[4] | (data[5] << 8));
-        uint16_t rawAngle   = (uint16_t)(data[6] | (data[7] << 8));
+        uint16_t currentRaw = static_cast<uint16_t>(
+            static_cast<uint16_t>(data[2]) | (static_cast<uint16_t>(data[3]) << 8)
+        );
+        uint16_t speedRaw = static_cast<uint16_t>(
+            static_cast<uint16_t>(data[4]) | (static_cast<uint16_t>(data[5]) << 8)
+        );
+        uint16_t angleRaw = static_cast<uint16_t>(
+            static_cast<uint16_t>(data[6]) | (static_cast<uint16_t>(data[7]) << 8)
+        );
+
+        int16_t rawCurrent = static_cast<int16_t>(currentRaw);
+        int16_t rawSpeed   = static_cast<int16_t>(speedRaw);
+        uint16_t rawAngle  = angleRaw;
 
         MotorState newState;
         newState.status  = data[0];

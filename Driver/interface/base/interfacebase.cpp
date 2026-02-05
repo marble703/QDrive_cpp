@@ -166,7 +166,7 @@ bool InterfaceBase::startReaderThread(std::function<void(std::string&)> readerFu
         {
             logger->debug("[InterfaceBase] Reader thread started for CAN");
             std::vector<uint8_t> data;
-            auto canIdPtr = std::make_shared<size_t>();
+            auto canIdPtr = std::make_shared<uint32_t>();
             while (true) {
                 if (this->stopReaderThread_.load())
                     break;
