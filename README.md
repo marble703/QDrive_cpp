@@ -92,7 +92,7 @@ chmod +x create-udev-rule.sh
 
 调试界面
 
-![](docs/gui.png)
+![](image/README/gui.png)
 
 `./build/tool/gui/qdrive_gui`
 
