@@ -51,6 +51,8 @@ Arch Linux
 
 ` cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j`
 
+
+
 可以设置 `WITHOUT_GUI=ON` 参数忽略调试界面及其 imgui 依赖 
 可以设置 `WITHOUT_LOGGER=ON` 参数忽略日志模块及其 spdlog 依赖 
 由于 example 依赖 logger 依赖，会同时忽略 example 部分
@@ -74,6 +76,13 @@ cmake --build build --config Release
 
 4. 启动 Windows 版 CAN 后端需用 SLCAN 兼容的串口设备（如 PEAK CAN USB 串口模式或 FTDI+slcan 驱动），构造 `Can` 时传入类似 `COM3@500000` 或 `slcan:COM3@250000` 的接口名。
 5. 目前仅支持标准 11 位帧（`t` 命令），间隔超时由 100 ms 进行控制；若需要扩展帧（`T`）、远程帧或自定义串口设置，可在 `Driver/io/can/can.cpp` 里扩展。
+
+#### CI/CD 自动测试
+
+本项目使用 GitHub Actions 自动编译测试，覆盖：
+
+- **Linux (Ubuntu 22.04)**：完整构建（含界面）、 `WITHOUT_GUI`、`WITHOUT_LOGGER` 变体
+- **Windows (Latest)**：MSVC + vcpkg 完整构建（`WITHOUT_GUI=ON`）
 
 ## 运行示例
 
