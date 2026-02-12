@@ -23,6 +23,16 @@ add_library(qdrive_driver ${DRIVER_SOURCES})
 
 add_library(QDrive::driver ALIAS qdrive_driver)
 
+if(WIN32)
+    find_package(Boost REQUIRED)
+    if(Boost_FOUND)
+        target_include_directories(qdrive_driver
+            PUBLIC
+                ${Boost_INCLUDE_DIRS}
+        )
+    endif()
+endif()
+
 target_include_directories(qdrive_driver
 	PUBLIC
 		${CMAKE_CURRENT_SOURCE_DIR}/io/can
