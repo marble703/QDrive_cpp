@@ -1,5 +1,8 @@
 # QDrive SDK (C++)
 
+[![Build on Linux](https://github.com/marble703/QDrive_cpp/actions/workflows/build-linux.yml/badge.svg)](https://github.com/marble703/QDrive_cpp/actions/workflows/build-linux.yml)
+[![Build on Windows](https://github.com/marble703/QDrive_cpp/actions/workflows/build-windows.yml/badge.svg)](https://github.com/marble703/QDrive_cpp/actions/workflows/build-windows.yml)
+
 ## 简介
 
 本项目为[QDrive](https://github.com/Liu-Curiousity/QDrive-Software)上位机 cpp 开发工具
