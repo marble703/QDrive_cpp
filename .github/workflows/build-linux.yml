@@ -1,0 +1,82 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  build-linux-no-third-party:
+    name: Build on Linux (WITHOUT_THIRD_PARTY)
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Update submodules
+      run: git submodule update --init --recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libboost-dev libfmt-dev pkg-config
+    
+    - name: Configure CMake
+      run: |
+        mkdir -p build
+        cd build
+        cmake -S .. -B . -DCMAKE_BUILD_TYPE=Release -DWITHOUT_GUI=ON -DWITHOUT_LOGGER=ON
+    
+    - name: Build
+      run: |
+        cd build
+        cmake --build . -j$(nproc)
+    
+    - name: Verify artifacts
+      run: |
+        test -f build/example/qdrive_example
+        echo "✓ Linux (WITHOUT_THIRD_PARTY) build successful"
+
+  build-linux:
+    name: Build on Linux
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Update submodules
+      run: git submodule update --init --recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libboost-dev \
+          libfmt-dev \
+          libglfw3-dev \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev \
+          pkg-config
+    
+    - name: Create build directory
+      run: mkdir -p build
+    
+    - name: Configure CMake
+      run: |
+        cd build
+        cmake -S .. -B . -DCMAKE_BUILD_TYPE=Release
+    
+    - name: Build
+      run: |
+        cd build
+        cmake --build . -j$(nproc)
+    
+    - name: Verify artifacts
+      run: |
+        test -f build/example/qdrive_example
+        test -f build/example/qdrive_example_can
+        test -f build/tool/gui/qdrive_gui
+        echo "✓ All Linux build artifacts created successfully"
