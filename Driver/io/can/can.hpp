@@ -1,9 +1,8 @@
 #pragma once
 
-#include <linux/can.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
+#include <cstdint>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "logger.hpp"
@@ -26,6 +25,10 @@ public:
 
 private:
     int sock_ { -1 };
+#if defined(_WIN32)
+    void* serialHandle_ { nullptr };
+    std::string rxBuffer_;
+#endif
     std::string ifname_;
     std::shared_ptr<qdriver::logger::Logger> logger_;
 };

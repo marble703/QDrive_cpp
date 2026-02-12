@@ -55,6 +55,26 @@ Arch Linux
 可以设置 `WITHOUT_LOGGER=ON` 参数忽略日志模块及其 spdlog 依赖 
 由于 example 依赖 logger 依赖，会同时忽略 example 部分
 
+### Windows 编译（提供 SLCAN 支持）
+
+1. 在 Windows 机器安装 Visual Studio（推荐 2022），确保包含 `桌面开发（使用C++）` 工作负载以及 CMake 工具。
+2. 安装 [vcpkg](https://github.com/microsoft/vcpkg) 并依赖安装所需的 Boost 与 fmt 等依赖：
+
+```bat
+vcpkg install boost-headers
+```
+
+3. 在项目根目录运行：
+
+```bat
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DWITHOUT_GUI=ON -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build build --config Release
+```
+
+4. 启动 Windows 版 CAN 后端需用 SLCAN 兼容的串口设备（如 PEAK CAN USB 串口模式或 FTDI+slcan 驱动），构造 `Can` 时传入类似 `COM3@500000` 或 `slcan:COM3@250000` 的接口名。
+5. 目前仅支持标准 11 位帧（`t` 命令），间隔超时由 100 ms 进行控制；若需要扩展帧（`T`）、远程帧或自定义串口设置，可在 `Driver/io/can/can.cpp` 里扩展。
+
 ## 运行示例
 
 **可能包含电机使能，电机旋转等操作，注意运行风险**
