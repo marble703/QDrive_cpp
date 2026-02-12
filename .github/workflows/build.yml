@@ -23,7 +23,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           libboost-dev \
+          libfmt-dev \
           libglfw3-dev \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev \
           pkg-config
     
     - name: Create build directory
@@ -63,11 +66,10 @@ jobs:
         git clone https://github.com/microsoft/vcpkg.git
         cd vcpkg
         .\bootstrap-vcpkg.bat
-        echo "${{ github.workspace }}\vcpkg_installed" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
     
     - name: Install dependencies via vcpkg
       run: |
-        ${{ github.workspace }}/vcpkg/vcpkg install boost-headers:x64-windows
+        ${{ github.workspace }}/vcpkg/vcpkg install boost-headers:x64-windows fmt:x64-windows
     
     - name: Configure CMake
       run: |
@@ -116,7 +118,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libboost-dev pkg-config
+        sudo apt-get install -y libboost-dev libfmt-dev pkg-config
     
     - name: Configure CMake
       run: |
@@ -148,7 +150,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libboost-dev pkg-config
+        sudo apt-get install -y libboost-dev libfmt-dev pkg-config
     
     - name: Configure CMake
       run: |
