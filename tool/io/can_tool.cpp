@@ -1,6 +1,7 @@
 #include "can.hpp"
 #include "interface.hpp"
 
+#include <csignal>
 #include <iostream>
 #include <optional>
 

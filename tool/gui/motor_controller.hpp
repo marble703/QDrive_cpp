@@ -2,6 +2,7 @@
 
 #include "interface/interface.hpp"
 #include "logger.hpp"
+#include <numbers>
 
 // Data structures
 struct MotorState {

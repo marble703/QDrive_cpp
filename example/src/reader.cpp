@@ -1,7 +1,9 @@
 #include "interface.hpp"
 #include "serial.hpp"
 
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 int main() {
     std::shared_ptr<qdriver::io::Serial> serialPortPtr = std::make_shared<qdriver::io::Serial>(
@@ -27,7 +29,7 @@ int main() {
     });
 
     while (true) {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     return 0;

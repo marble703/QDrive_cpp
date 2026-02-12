@@ -3,6 +3,7 @@
 #include "base/interfacebase.hpp"
 
 #include <boost/numeric/conversion/cast.hpp>
+#include <numbers>
 
 namespace qdriver::interface {
 

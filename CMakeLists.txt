@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Ensure MSVC compiles source files as UTF-8 to satisfy bundled fmt/spdlog checks
 if(MSVC)
     add_compile_options(/utf-8)
+    add_compile_definitions(_WIN32_WINNT=0x0601)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
