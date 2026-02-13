@@ -9,6 +9,8 @@
 
 正在开发中，欢迎提 issue 和 pr
 
+windows 支持开发中
+
 已知问题： 在 gui 中，未启动 can 可能导致程序崩溃 
 点击 disconnect 可能导致程序崩溃
 
@@ -44,41 +46,40 @@ Arch Linux
 图形化界面：
 * [imgui](https://github.com/ocornut/imgui) (MIT License)
 
-## 拉取和编译
+## 拉取和构建
 
-(如果需要调试界面可能需要手动安装 glfw3, arch linux 也是)
+(如果需要调试界面可能需要手动安装 glfw3, 日志库可能需要手动安装 fmt)
 
-`sudo apt install libglfw3-dev pkg-config`
+`sudo apt install libboost-dev libfmt-dev pkg-config`
 
 ` git submodule update --init --recursive`
 
 ` cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j`
 
-
-
 可以设置 `WITHOUT_GUI=ON` 参数忽略调试界面及其 imgui 依赖 
 可以设置 `WITHOUT_LOGGER=ON` 参数忽略日志模块及其 spdlog 依赖 
 由于 example 依赖 logger 依赖，会同时忽略 example 部分
 
-### Windows 编译（提供 SLCAN 支持）
+### Windows 编译(SLCAN)
 
-1. 在 Windows 机器安装 Visual Studio（推荐 2022），确保包含 `桌面开发（使用C++）` 工作负载以及 CMake 工具。
-2. 安装 [vcpkg](https://github.com/microsoft/vcpkg) 并依赖安装所需的 Boost 与 fmt 等依赖：
+- 推荐工具链：Visual Studio 2022（"桌面开发（使用 C++）" 工作负载） + CMake。
+- 我们在 CMake 中已为 MSVC 自动添加 `/utf-8` 和 `_WIN32_WINNT=0x0601`（无需手动设置）。
 
+必装 vcpkg 库：
 ```bat
-vcpkg install boost-headers
+vcpkg install boost-headers boost-asio fmt
 ```
 
-3. 在项目根目录运行：
-
+在项目根目录构建：
 ```bat
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DWITHOUT_GUI=ON -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+  -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake --build build --config Release
 ```
 
-4. 启动 Windows 版 CAN 后端需用 SLCAN 兼容的串口设备（如 PEAK CAN USB 串口模式或 FTDI+slcan 驱动），构造 `Can` 时传入类似 `COM3@500000` 或 `slcan:COM3@250000` 的接口名。
-5. 目前仅支持标准 11 位帧（`t` 命令），间隔超时由 100 ms 进行控制；若需要扩展帧（`T`）、远程帧或自定义串口设置，可在 `Driver/io/can/can.cpp` 里扩展。
+- 运行 CAN 示例时，请传入 SLCAN 风格的串口端点，例如 `COM3@500000` 或 `slcan:COM3@500000`。
+  - 支持的标准波特率（SLCAN）：10000/20000/50000/100000/125000/250000/500000/750000/1000000。
+  - 当前 Windows 后端实验性实现支持标准 11-bit 帧
 
 #### CI/CD 自动测试
 
@@ -113,7 +114,8 @@ can：
 
 ## 脚本
 
-设置 usb rule
+设置 usb-rule 
+需要为脚本添加执行权限, 传入设备路径 和 设备名称
 
 ``` sh
 chmod +x create-udev-rule.sh
