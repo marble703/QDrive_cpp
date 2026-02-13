@@ -9,18 +9,18 @@
 #include <stdexcept>
 
 #if defined(__linux__)
-#include <cerrno>
-#include <linux/can.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <unistd.h>
+    #include <cerrno>
+    #include <linux/can.h>
+    #include <net/if.h>
+    #include <sys/ioctl.h>
+    #include <sys/select.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
 #elif defined(_WIN32)
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
+    #include <windows.h>
 #endif
 
 namespace qdriver::io {
@@ -28,68 +28,69 @@ namespace qdriver::io {
 #if defined(_WIN32)
 namespace {
 
-constexpr DWORD kReadTimeoutMs  = 100;
-constexpr DWORD kWriteTimeoutMs = 100;
+    constexpr DWORD kReadTimeoutMs  = 100;
+    constexpr DWORD kWriteTimeoutMs = 100;
 
-std::optional<std::string> slcanBitrateCommand(unsigned int bitrate) {
-    switch (bitrate) {
-        case 10000:
-            return "S0\r";
-        case 20000:
-            return "S1\r";
-        case 50000:
-            return "S2\r";
-        case 100000:
-            return "S3\r";
-        case 125000:
-            return "S4\r";
-        case 250000:
-            return "S5\r";
-        case 500000:
-            return "S6\r";
-        case 750000:
-            return "S7\r";
-        case 1000000:
-            return "S8\r";
-        default:
-            return std::nullopt;
+    std::optional<std::string> slcanBitrateCommand(unsigned int bitrate) {
+        switch (bitrate) {
+            case 10000:
+                return "S0\r";
+            case 20000:
+                return "S1\r";
+            case 50000:
+                return "S2\r";
+            case 100000:
+                return "S3\r";
+            case 125000:
+                return "S4\r";
+            case 250000:
+                return "S5\r";
+            case 500000:
+                return "S6\r";
+            case 750000:
+                return "S7\r";
+            case 1000000:
+                return "S8\r";
+            default:
+                return std::nullopt;
+        }
     }
-}
 
-bool isHexChar(char c) {
-    return std::isxdigit(static_cast<unsigned char>(c)) != 0;
-}
+    bool isHexChar(char c) {
+        return std::isxdigit(static_cast<unsigned char>(c)) != 0;
+    }
 
-bool parseHexByte(const std::string& s, std::size_t pos, uint8_t& out) {
-    if (pos + 1 >= s.size() || !isHexChar(s[pos]) || !isHexChar(s[pos + 1])) {
-        return false;
+    bool parseHexByte(const std::string& s, std::size_t pos, uint8_t& out) {
+        if (pos + 1 >= s.size() || !isHexChar(s[pos]) || !isHexChar(s[pos + 1])) {
+            return false;
+        }
+        unsigned int value = 0;
+        std::stringstream ss;
+        ss << std::hex << s.substr(pos, 2);
+        ss >> value;
+        if (ss.fail()) {
+            return false;
+        }
+        out = static_cast<uint8_t>(value);
+        return true;
     }
-    unsigned int value = 0;
-    std::stringstream ss;
-    ss << std::hex << s.substr(pos, 2);
-    ss >> value;
-    if (ss.fail()) {
-        return false;
-    }
-    out = static_cast<uint8_t>(value);
-    return true;
-}
 
-bool parseHex3(const std::string& s, std::size_t pos, uint32_t& out) {
-    if (pos + 2 >= s.size() || !isHexChar(s[pos]) || !isHexChar(s[pos + 1])
-        || !isHexChar(s[pos + 2])) {
-        return false;
+    bool parseHex3(const std::string& s, std::size_t pos, uint32_t& out) {
+        if (pos + 2 >= s.size() || !isHexChar(s[pos]) || !isHexChar(s[pos + 1])
+            || !isHexChar(s[pos + 2]))
+        {
+            return false;
+        }
+        unsigned int value = 0;
+        std::stringstream ss;
+        ss << std::hex << s.substr(pos, 3);
+        ss >> value;
+        if (ss.fail()) {
+            return false;
+        }
+        out = value;
+        return true;
     }
-    unsigned int value = 0;
-    std::stringstream ss;
-    ss << std::hex << s.substr(pos, 3);
-    ss >> value;
-    if (ss.fail()) {
-        return false;
-    }
-    out = value;
-    return true;
-}
 
 } // namespace
 #endif
@@ -212,7 +213,8 @@ Can::Can(const std::string& ifname, std::shared_ptr<qdriver::logger::Logger> log
     auto writeCommand = [&](const std::string& cmd) {
         DWORD written = 0;
         if (!WriteFile(h, cmd.data(), static_cast<DWORD>(cmd.size()), &written, nullptr)
-            || written != cmd.size()) {
+            || written != cmd.size())
+        {
             CloseHandle(h);
             throw std::runtime_error("Failed writing SLCAN command");
         }
@@ -244,8 +246,8 @@ Can::~Can() {
     }
 #elif defined(_WIN32)
     if (serialHandle_) {
-        HANDLE h = static_cast<HANDLE>(serialHandle_);
-        DWORD written = 0;
+        HANDLE h              = static_cast<HANDLE>(serialHandle_);
+        DWORD written         = 0;
         const char closeCmd[] = "C\r";
         WriteFile(h, closeCmd, static_cast<DWORD>(sizeof(closeCmd) - 1), &written, nullptr);
         CloseHandle(h);
@@ -315,13 +317,8 @@ bool Can::sendFrame(const std::vector<uint8_t>& data, unsigned int id) {
 
     DWORD written = 0;
     HANDLE h      = static_cast<HANDLE>(serialHandle_);
-    bool ok = WriteFile(
-        h,
-        frameCmd.data(),
-        static_cast<DWORD>(frameCmd.size()),
-        &written,
-        nullptr
-    ) && written == frameCmd.size();
+    bool ok = WriteFile(h, frameCmd.data(), static_cast<DWORD>(frameCmd.size()), &written, nullptr)
+        && written == frameCmd.size();
 
     if (!ok) {
         logger_->error("[CAN] Failed to send SLCAN frame: ID=0x{:X}", id);
