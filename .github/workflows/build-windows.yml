@@ -3,8 +3,16 @@ name: Build on Windows
 on:
   push:
     branches: [ '**' ]
+    paths-ignore:
+      - 'README.md'
+      - 'image/**'
+      - 'script/**'
   pull_request:
     branches: [ '**' ]
+    paths-ignore:
+      - 'README.md'
+      - 'image/**'
+      - 'script/**'
 
 jobs:
   build-windows:
