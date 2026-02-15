@@ -7,12 +7,14 @@ on:
       - 'README.md'
       - 'image/**'
       - 'script/**'
+      - '.github/workflows/build-windows.yml'
   pull_request:
     branches: [ '**' ]
     paths-ignore:
       - 'README.md'
       - 'image/**'
       - 'script/**'
+      - '.github/workflows/build-windows.yml'
 
 jobs:
   build-linux-no-third-party:

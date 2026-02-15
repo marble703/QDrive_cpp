@@ -10,6 +10,7 @@
 正在开发中，欢迎提 issue 和 pr
 
 windows 支持开发中
+example 未完成测试
 
 已知问题： 在 gui 中，未启动 can 可能导致程序崩溃 
 点击 disconnect 可能导致程序崩溃
@@ -71,6 +72,13 @@ vcpkg install boost-headers boost-asio fmt glfw3
 在项目根目录构建：
 ```bat
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DWITHOUT_GUI=ON -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build build --config Release
+```
+
+使用 vs 2026 可以改为
+```bat
+cmake -S . -B build -G "Visual Studio 18 2026" -A x64 -DWITHOUT_GUI=ON -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake --build build --config Release
 ```
