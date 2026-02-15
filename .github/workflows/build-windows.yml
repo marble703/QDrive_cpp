@@ -36,7 +36,7 @@ jobs:
     - name: Install dependencies via vcpkg
       run: |
         cd ${{ github.workspace }}\vcpkg
-        .\vcpkg install boost-headers:x64-windows boost-asio:x64-windows fmt:x64-windows
+        .\vcpkg install boost-headers:x64-windows boost-asio:x64-windows fmt:x64-windows glfw3:x64-windows
     
     - name: Configure CMake
       run: |
@@ -45,7 +45,6 @@ jobs:
         cmake -S .. -B . `
           -G "Visual Studio 17 2022" `
           -A x64 `
-          -DWITHOUT_GUI=ON `
           -DCMAKE_BUILD_TYPE=Release `
           -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
     

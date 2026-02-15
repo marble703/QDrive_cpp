@@ -62,12 +62,10 @@ Arch Linux
 
 ### Windows 编译(SLCAN)
 
-- 推荐工具链：Visual Studio 2022（"桌面开发（使用 C++）" 工作负载） + CMake。
-- 我们在 CMake 中已为 MSVC 自动添加 `/utf-8` 和 `_WIN32_WINNT=0x0601`（无需手动设置）。
+glfw3 为 gui 依赖，fmt 为 logger 依赖，boost-headers 和 boost-asio 为通信协议依赖
 
-必装 vcpkg 库：
 ```bat
-vcpkg install boost-headers boost-asio fmt
+vcpkg install boost-headers boost-asio fmt glfw3
 ```
 
 在项目根目录构建：
@@ -77,9 +75,9 @@ cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DWITHOUT_GUI=ON -DCMAKE_B
 cmake --build build --config Release
 ```
 
-- 运行 CAN 示例时，请传入 SLCAN 风格的串口端点，例如 `COM3@500000` 或 `slcan:COM3@500000`。
-  - 支持的标准波特率（SLCAN）：10000/20000/50000/100000/125000/250000/500000/750000/1000000。
-  - 当前 Windows 后端实验性实现支持标准 11-bit 帧
+- 运行 CAN 示例时，传入 SLCAN 风格的串口端点，例如 `COM3@500000` 或 `slcan:COM3@500000`。
+- 支持的标准波特率（SLCAN）：10000/20000/50000/100000/125000/250000/500000/750000/1000000。
+- 当前 Windows 后端实验性实现支持标准 11-bit 帧
 
 #### CI/CD 自动测试
 
