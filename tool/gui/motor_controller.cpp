@@ -14,10 +14,8 @@ bool MotorController::init(const std::string& serialDev, const std::string& canI
     stop();
 
     try {
-        auto ioContextSerial =
-            qdriver::io::IOContextPtrSelector(std::make_unique<boost::asio::io_context>());
-        auto serialPort =
-            std::make_shared<qdriver::io::Serial>(std::move(ioContextSerial), serialDev, 115200);
+        ioContext_       = std::make_unique<boost::asio::io_context>();
+        auto serialPort  = std::make_shared<qdriver::io::Serial>(*ioContext_, serialDev, 115200);
         interfaceSerial_ = std::make_shared<qdriver::interface::Interface>(serialPort, logger_);
 
         interfaceSerial_->startReaderThread([this](std::string& msg) {
@@ -53,14 +51,16 @@ void MotorController::stop() {
     if (interfaceCan_) {
         try {
             interfaceCan_->ReleaseReaderThread();
-        } catch (...) {}
+        } catch (...) {
+        }
         interfaceCan_.reset();
     }
 
     if (interfaceSerial_) {
         try {
             interfaceSerial_->ReleaseReaderThread();
-        } catch (...) {}
+        } catch (...) {
+        }
         interfaceSerial_.reset();
     }
 
@@ -259,14 +259,14 @@ void MotorController::parseConfigLine(const std::string& line) {
     // Check for confirmation result
     if (line.find("completed") != std::string::npos) {
         std::lock_guard<std::mutex> lock(confirmMutex_);
-        waitingConfirm_ = false;
+        waitingConfirm_    = false;
         lastConfirmResult_ = "completed";
         std::cout << "[Confirm] Operation completed." << std::endl;
         return;
     }
     if (line.find("cancelled") != std::string::npos) {
         std::lock_guard<std::mutex> lock(confirmMutex_);
-        waitingConfirm_ = false;
+        waitingConfirm_    = false;
         lastConfirmResult_ = "cancelled";
         std::cout << "[Confirm] Operation cancelled." << std::endl;
         return;
@@ -400,7 +400,8 @@ void MotorController::parseCanMessage(std::string& msg) {
             std::lock_guard<std::mutex> lock(stateMutex_);
             currentState_ = newState;
         }
-    } catch (...) {}
+    } catch (...) {
+    }
 }
 
 void MotorController::controlLoop() {

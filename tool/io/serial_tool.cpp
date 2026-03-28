@@ -16,7 +16,7 @@ struct Options {
     std::string port    = "/dev/QD4310-0";
     uint32_t baud       = 115200;
     std::string outfile = "serial_out.log";
-    std::size_t chunk   = 256; // 每次读取的字节数
+    std::size_t chunk   = 256;
 };
 
 void print_usage(const char* prog) {
@@ -62,11 +62,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // 准备 IO 上下文
-    auto io_ctx = std::make_shared<IoContext>();
-    IOContextPtrSelector io_sel(io_ctx);
+    IoContext io_ctx;
 
-    // 配置串口（当前实现只支持设置波特率/数据位/校验位/停止位）
     SerialPortConfig cfg;
     cfg.baud_rate = opt.baud;
     cfg.data_bits = 8;
@@ -75,7 +72,7 @@ int main(int argc, char** argv) {
 
     std::unique_ptr<Serial> ser;
     try {
-        ser = std::make_unique<Serial>(std::move(io_sel), opt.port, cfg, opt.port);
+        ser = std::make_unique<Serial>(io_ctx, opt.port, cfg, opt.port);
     } catch (const std::exception& e) {
         std::cerr << "打开串口异常: " << e.what() << std::endl;
         return 2;
@@ -96,7 +93,6 @@ int main(int argc, char** argv) {
               << ", 输出文件: " << opt.outfile << std::endl;
     std::cout << "提示: Ctrl+C 结束. 直接输入回车发送到串口." << std::endl;
 
-    // 读线程：从串口读取数据并写入文件/标准输出
     std::thread reader([&]() {
         std::string buf;
         buf.resize(opt.chunk);
@@ -121,7 +117,6 @@ int main(int argc, char** argv) {
         }
     });
 
-    // 主线程：从终端读入文本，发送到串口
     std::string line;
     while (g_running.load() && std::getline(std::cin, line)) {
         line.push_back('\n');

@@ -3,6 +3,8 @@
 #include "interface/interface.hpp"
 #include "logger.hpp"
 
+#include <boost/asio/io_context.hpp>
+
 // Data structures
 struct MotorState {
     float angle    = 0.0f;
@@ -80,8 +82,12 @@ public:
     MotorState getState();
 
     // Direct interface access (for simplified usage)
-    std::shared_ptr<qdriver::interface::Interface> getSerialInterface() { return interfaceSerial_; }
-    std::shared_ptr<qdriver::interface::Interface> getCanInterface() { return interfaceCan_; }
+    std::shared_ptr<qdriver::interface::Interface> getSerialInterface() {
+        return interfaceSerial_;
+    }
+    std::shared_ptr<qdriver::interface::Interface> getCanInterface() {
+        return interfaceCan_;
+    }
 
     // Check if waiting for confirmation
     bool isWaitingConfirm();
@@ -127,6 +133,7 @@ private:
     std::shared_ptr<qdriver::interface::Interface> interfaceSerial_;
     std::shared_ptr<qdriver::interface::Interface> interfaceCan_;
     std::shared_ptr<qdriver::logger::Logger> logger_;
+    std::unique_ptr<boost::asio::io_context> ioContext_;
 
     // State management
     std::mutex stateMutex_;

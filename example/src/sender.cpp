@@ -5,10 +5,10 @@
 using qdriver::interface::ioType::SERIAL;
 
 int main() {
-    auto ioContext = std::make_unique<qdriver::io::IoContext>();
+    qdriver::io::IoContext ioContext;
 
     std::shared_ptr<qdriver::io::Serial> serialPortPtr = std::make_shared<qdriver::io::Serial>(
-        std::move(ioContext),
+        ioContext,
         "/dev/QD4310-1",
         115200,
         8,

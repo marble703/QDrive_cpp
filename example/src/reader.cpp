@@ -4,8 +4,10 @@
 #include <iostream>
 
 int main() {
+    qdriver::io::IoContext ioContext;
+
     std::shared_ptr<qdriver::io::Serial> serialPortPtr = std::make_shared<qdriver::io::Serial>(
-        std::make_unique<qdriver::io::IoContext>(),
+        ioContext,
         "/dev/QD4310-1",
         115200,
         8,
