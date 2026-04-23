@@ -1,5 +1,6 @@
 #include "can.hpp"
 
+#include <cerrno>
 #include <cstring>
 
 namespace qdriver::io {
@@ -12,8 +13,8 @@ Can::Can(const std::string& ifname, std::shared_ptr<qdriver::logger::Logger> log
     // 创建 Socket
     sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (sock_ < 0) {
-        logger_->error("[CAN] Failed to create CAN socket for {}", ifname_);
-        throw std::runtime_error("Failed to create CAN socket");
+        logger_->error("[CAN] Failed to create CAN socket for {}: {}", ifname_, strerror(errno));
+        return;
     }
 
     ifreq ifr;
@@ -22,9 +23,14 @@ Can::Can(const std::string& ifname, std::shared_ptr<qdriver::logger::Logger> log
 
     // 获取接口索引
     if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
-        logger_->error("[CAN] Failed to get interface index for {}", ifname_);
+        logger_->error(
+            "[CAN] Failed to get interface index for {}: {}",
+            ifname_,
+            strerror(errno)
+        );
         close(sock_);
-        throw std::runtime_error("Failed to get interface index for " + ifname);
+        sock_ = -1;
+        return;
     }
 
     sockaddr_can addr;
@@ -34,9 +40,10 @@ Can::Can(const std::string& ifname, std::shared_ptr<qdriver::logger::Logger> log
 
     // 绑定套接字
     if (bind(sock_, (sockaddr*)&addr, sizeof(addr)) < 0) {
-        logger_->error("[CAN] Failed to bind CAN socket to {}", ifname_);
+        logger_->error("[CAN] Failed to bind CAN socket to {}: {}", ifname_, strerror(errno));
         close(sock_);
-        throw std::runtime_error("Failed to bind CAN socket to " + ifname);
+        sock_ = -1;
+        return;
     }
 
     logger_->info("[CAN] CAN interface {} initialized successfully", ifname_);
